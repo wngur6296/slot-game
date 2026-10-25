@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="럭키7 슬롯">
+<meta name="theme-color" content="#14051f">
+<title>럭키 7 슬롯</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/img/icon-180.png">
+<link rel="preload" as="image" href="assets/img/bg.webp">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div class="bg"></div><div class="bg-glow"></div>
+
+  <!-- 상단 HUD -->
+  <header class="hud">
+    <button class="lvl" id="btnLevel" aria-label="레벨">
+      <span class="lvl-badge"><b id="lvlNum">1</b></span>
+      <span class="xp"><i id="xpBar"></i></span>
+    </button>
+    <div class="pill coins"><span class="ico coin-ico"></span><b id="coinText">0</b></div>
+    <button class="pill gems" id="btnShop"><span class="ico gem-ico"></span><b id="gemText">0</b><span class="plus">+</span></button>
+    <button class="icon-btn" id="btnMenu" aria-label="메뉴">☰</button>
+  </header>
+
+  <div class="logo"><span class="logo-top">LUCKY</span><span class="logo-7">7</span><span class="logo-sub">클래식 슬롯</span></div>
+
+  <!-- 슬롯 머신 -->
+  <main class="machine" id="machine">
+    <div class="marquee" id="marquee"></div>
+    <div class="fs-banner" id="fsBanner">프리스핀 <b id="fsLeft">0</b> · 당첨 x<span id="fsMult">2</span></div>
+    <div class="reels-wrap">
+      <div class="reels" id="reels">
+        <div class="reel" data-i="0"><div class="track"></div></div>
+        <div class="reel" data-i="1"><div class="track"></div></div>
+        <div class="reel" data-i="2"><div class="track"></div></div>
+      </div>
+      <svg class="lines" id="lines" preserveAspectRatio="none"></svg>
+      <div class="glass"></div>
+    </div>
+    <div class="winbar" id="winbar"><span id="winLabel">행운을 빌어요!</span><b id="winAmount"></b></div>
+    <div class="streak" id="streak"></div>
+  </main>
+
+  <!-- 하단 컨트롤 -->
+  <footer class="controls">
+    <div class="bonus-row">
+      <button class="chip" id="btnHourly"><span>🎁</span><em id="hourlyText">무료 코인</em></button>
+      <button class="chip" id="btnDaily"><span>📅</span><em>출석 보상</em></button>
+      <button class="chip" id="btnInfo"><span>📜</span><em>배당표</em></button>
+    </div>
+    <div class="spin-row">
+      <div class="bet">
+        <button class="round sm" id="betDown" aria-label="베팅 감소">−</button>
+        <div class="bet-val"><small>BET</small><b id="betText">10</b></div>
+        <button class="round sm" id="betUp" aria-label="베팅 증가">+</button>
+      </div>
+      <button class="spin" id="btnSpin"><span class="spin-ring"></span><span class="spin-label" id="spinLabel">SPIN</span></button>
+      <div class="toggles">
+        <button class="tog" id="btnAuto">AUTO</button>
+        <button class="tog" id="btnTurbo">⚡ 터보</button>
+      </div>
+    </div>
+  </footer>
+
+  <canvas id="fx"></canvas>
+
+  <!-- 큰 당첨 오버레이 -->
+  <div class="overlay" id="bigwin">
+    <div class="rays"></div>
+    <video id="jpVideo" src="assets/video/jackpot.mp4" muted playsinline preload="auto"></video>
+    <div class="bw-title" id="bwTitle">BIG WIN</div>
+    <div class="bw-amount" id="bwAmount">0</div>
+    <div class="bw-tap">탭하여 계속</div>
+  </div>
+
+  <!-- 모달 -->
+  <div class="modal" id="modal"><div class="sheet"><button class="close" id="modalClose">✕</button><div id="modalBody"></div></div></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- 첫 탭 (오디오 잠금 해제) -->
+  <div class="intro" id="intro">
+    <div class="intro-logo"><img src="assets/img/seven.webp" alt=""><div>LUCKY 7</div></div>
+    <p>가상 코인 전용 게임 · 실제 돈은 사용되지 않아요</p>
+    <button class="start" id="btnStart">탭해서 시작</button>
+  </div>
+</div>
+<script src="js/config.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/economy.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/reels.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
