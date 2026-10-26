@@ -15,10 +15,11 @@
 
   // ----- HUD -----
   let shownCoins = E.s.coins;
+  $('coinText')._fmt = fmtCompact;
   function hud(animate) {
     const s = E.s; $('gemText').textContent = fmt(s.gems); $('lvlNum').textContent = s.level;
     $('xpBar').style.width = Math.min(100, (100 * s.xp) / C.level.xpNeeded(s.level)) + '%';
-    if (animate && s.coins > shownCoins) FX.countUp($('coinText'), shownCoins, s.coins, 900); else $('coinText').textContent = fmt(s.coins);
+    if (animate && s.coins > shownCoins) FX.countUp($('coinText'), shownCoins, s.coins, 900); else $('coinText').textContent = fmtCompact(s.coins); $('coinText').title = fmt(s.coins);
     shownCoins = s.coins; $('betText').textContent = fmt(E.bet());
     $('betDown').disabled = s.betIdx <= 0; $('betUp').disabled = s.betIdx >= E.maxBetIdx();
     const fs = s.freeSpins > 0; document.body.classList.toggle('freespin', fs); $('btnSpin').classList.toggle('free', fs);
@@ -206,7 +207,7 @@
   tap('btnAuto', () => { auto = !auto; autoCount = 0; $('btnAuto').classList.toggle('on', auto); Audio2.play('click'); hud(); if (auto) spin(); });
   tap('btnTurbo', () => { E.s.settings.turbo = !E.s.settings.turbo; $('btnTurbo').classList.toggle('on', E.s.settings.turbo); E.save(); Audio2.play('click'); });
   tap('btnHourly', () => charge($('btnHourly')));
-  tap('btnDaily', daily); tap('btnHome', () => { if (spinning || E.s.freeSpins > 0) return toast('스핀이 끝난 뒤 로비로 갈 수 있어요'); auto = false; $('btnAuto').classList.remove('on'); Lobby.show(); }); tap('btnInfo', paytable); tap('btnShop', () => Shop.open('ex')); tap('btnStore', () => Shop.open()); tap('btnMenu', menu); tap('btnLevel', levelInfo);
+  tap('btnDaily', daily); tap('coinPill', () => toast(`🪙 보유 잔액 ${fmt(E.s.coins)}`)); tap('btnHome', () => { if (spinning || E.s.freeSpins > 0) return toast('스핀이 끝난 뒤 로비로 갈 수 있어요'); auto = false; $('btnAuto').classList.remove('on'); Lobby.show(); }); tap('btnInfo', paytable); tap('btnShop', () => Shop.open('ex')); tap('btnStore', () => Shop.open()); tap('btnMenu', menu); tap('btnLevel', levelInfo);
   addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); $('btnSpin').click(); } });
   $('btnTurbo').classList.toggle('on', E.s.settings.turbo);
 

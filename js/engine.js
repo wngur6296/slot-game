@@ -1,3 +1,8 @@
+/* 잔액 축약 표기: 99,999 까지 그대로, 이후 123.4K / 1.23M / 1.2B (전체 값은 탭해서 확인) */
+function fmtCompact(n) { n = Math.floor(n); const a = Math.abs(n);
+  const f = (v, u) => (v >= 100 ? Math.floor(v) : Math.floor(v * 10) / 10).toString().replace(/\.0$/, '') + u;
+  if (a < 100000) return n.toLocaleString('en-US'); if (a < 1e6) return f(n / 1e3, 'K'); if (a < 1e9) return (a < 1e7 ? (Math.floor(n / 1e4) / 100).toString() + 'M' : f(n / 1e6, 'M')); return f(n / 1e9, 'B'); }
+if (typeof window !== 'undefined') window.fmtCompact = fmtCompact;
 /* 순수 게임 로직 (DOM 없음) — 브라우저와 node(simulate.js) 공용 */
 (function (root) {
   function makeRng(seed) { // mulberry32 (시뮬레이션용). 게임은 crypto 사용

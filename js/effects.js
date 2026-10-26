@@ -41,7 +41,7 @@ const FX = (() => {
   function countUp(el, from, to, ms, onTick) {
     return new Promise((res) => { const t0 = performance.now(); let last = -1;
       (function step(t) { const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3), v = Math.round(from + (to - from) * e);
-        el.textContent = v.toLocaleString(); if (onTick && v !== last) onTick(v); last = v; if (k < 1 && !el._skip) requestAnimationFrame(step); else { el.textContent = to.toLocaleString(); el._skip = false; res(); } })(t0); });
+        el.textContent = (el._fmt || ((x) => x.toLocaleString()))(v); if (onTick && v !== last) onTick(v); last = v; if (k < 1 && !el._skip) requestAnimationFrame(step); else { el.textContent = (el._fmt || ((x) => x.toLocaleString()))(to); el._skip = false; res(); } })(t0); });
   }
   return { setStyle, coinRain, coinBurst, confetti, sparkle, fireworks, shake, countUp };
 })();

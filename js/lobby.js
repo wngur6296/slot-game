@@ -74,7 +74,7 @@ const Lobby = (() => {
     const s = E_().s, v = E_().vip();
     $('lbLvl').textContent = s.level; $('lbVip').textContent = 'VIP ' + v.tier.name; $('lbVip').style.color = v.tier.color;
     $('lbTitle').textContent = document.querySelector('.logo-sub') ? `Lv.${s.level} · ${fmt(s.vipPts)} P` : '';
-    $('lbCoins').textContent = fmt(s.coins); $('lbGems').textContent = fmt(s.gems);
+    $('lbCoins').textContent = s.coins >= 1e7 ? fmtCompact(s.coins) : fmt(s.coins); $('lbGems').textContent = fmt(s.gems);
     const el = $({ home: 'pgHome', promo: 'pgPromo', wallet: 'pgWallet' }[page]); const sc = el.scrollTop;
     el.innerHTML = { home, promo, wallet }[page](); el.scrollTop = sc;
     document.querySelectorAll('.lb-page').forEach((p) => p.classList.toggle('on', p.dataset.page === page));

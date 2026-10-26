@@ -336,3 +336,8 @@ body.freespin .fs-banner{transform:translateX(-50%) scale(1)}
 .logo-7.long{font-size:28px;letter-spacing:1px}
 .intro-logo span{display:block;font-size:14px;letter-spacing:8px;color:#ffd34d;margin-top:4px}
 .save-row>div{min-width:0}.save-row b{white-space:nowrap}.save-row .cbtn{flex:none;width:auto!important;padding:8px 12px;margin:0}
+
+/* HUD: 375/390px에서도 잔액이 잘리지 않게 */
+.hud{gap:6px}.xp{width:40px}.pill{padding:0 8px 0 3px;gap:4px;color:inherit;font:inherit}.pill b{overflow:visible;text-overflow:clip;font-size:15px}
+.pill.coins{justify-content:flex-start;cursor:pointer}.hud .icon-btn{flex:0 0 auto;width:36px}
+@media (max-width:380px){.xp{width:30px}.pill b{font-size:14px}.hud{gap:5px}.hud .icon-btn{width:34px}}
