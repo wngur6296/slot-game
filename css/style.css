@@ -1,5 +1,7 @@
 /* ===== 럭키7 슬롯 스타일 ===== 색상은 :root 변수만 바꾸면 테마 변경 */
 :root{
+  --f1:#e6a019; --f2:#4a1b00; --f3:#ffd34d; --f4:#5a1a6e;  /* 릴 프레임 (상점 스킨) */
+  --s1:#ff8fb8; --s2:#ff2a6a; --s3:#a0003a; --s4:rgba(255,61,154,.6); /* 스핀 버튼 */
   --gold1:#fff3b0; --gold2:#ffd34d; --gold3:#e6a019; --gold4:#9a5a06;
   --pink:#ff3d9a; --purple:#2a0b3d; --deep:#14051f; --cyan:#4de1ff;
   --sat:env(safe-area-inset-top); --sab:env(safe-area-inset-bottom);
@@ -47,10 +49,10 @@ body.freespin .bg-glow{background:radial-gradient(60% 45% at 50% 45%,rgba(77,225
 
 /* 머신 */
 .machine{position:relative;width:100%;margin-top:8px;margin-bottom:auto;padding:16px 12px 12px;border-radius:26px;
-  background:linear-gradient(180deg,#5a1a6e,#2a0b3d 30%,#1a0626);
-  box-shadow:0 0 0 3px var(--gold3),0 0 0 6px #4a1b00,0 0 0 8px var(--gold2),0 20px 50px rgba(0,0,0,.7),0 0 40px rgba(255,180,40,.25)}
+  background:linear-gradient(180deg,var(--f4),#2a0b3d 30%,#1a0626);transition:box-shadow .4s,background .4s;
+  box-shadow:0 0 0 3px var(--f1),0 0 0 6px var(--f2),0 0 0 8px var(--f3),0 20px 50px rgba(0,0,0,.7),0 0 40px color-mix(in srgb,var(--f3) 35%,transparent)}
 .marquee{position:absolute;inset:4px;border-radius:22px;pointer-events:none}
-.marquee i{position:absolute;width:7px;height:7px;border-radius:50%;background:#fff6c8;box-shadow:0 0 6px 2px #ffcf40;transform:translate(-50%,-50%);animation:bulb 1s steps(1) infinite}
+.marquee i{position:absolute;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px var(--f3);transform:translate(-50%,-50%);animation:bulb 1s steps(1) infinite}
 .marquee i:nth-child(2n){animation-delay:.5s}
 .machine.hot .marquee i{animation-duration:.2s}
 @keyframes bulb{50%{background:#7a4b10;box-shadow:none}}
@@ -58,7 +60,7 @@ body.freespin .bg-glow{background:radial-gradient(60% 45% at 50% 45%,rgba(77,225
   background:linear-gradient(180deg,#5ff3ff,#1b7bff);box-shadow:0 0 18px #4de1ff;color:#fff;text-shadow:0 1px 2px #003;transition:transform .35s cubic-bezier(.3,1.6,.5,1);z-index:3}
 body.freespin .fs-banner{transform:translateX(-50%) scale(1)}
 .reels-wrap{position:relative;border-radius:14px;overflow:hidden;padding:6px;
-  background:linear-gradient(180deg,#0b0210,#1d0828 50%,#0b0210);box-shadow:inset 0 0 0 2px #000,inset 0 0 0 4px rgba(255,200,80,.35)}
+  background:linear-gradient(180deg,#0b0210,#1d0828 50%,#0b0210);box-shadow:inset 0 0 0 2px #000,inset 0 0 0 4px color-mix(in srgb,var(--f3) 40%,transparent)}
 .reels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;height:min(86vw,44vh,420px)}
 .reel{position:relative;overflow:hidden;border-radius:10px;
   background:linear-gradient(180deg,#d9d2e6 0%,#fff 18%,#fff 82%,#d9d2e6 100%);box-shadow:inset 0 0 12px rgba(0,0,0,.35)}
@@ -107,8 +109,8 @@ body.freespin .fs-banner{transform:translateX(-50%) scale(1)}
 .bet-val small{display:block;font-size:10px;color:#c8a8ff;font-weight:700;letter-spacing:1px}
 .bet-val b{font-size:16px;color:var(--gold1);font-variant-numeric:tabular-nums}
 .spin{position:relative;width:104px;height:104px;flex:0 0 104px;border-radius:50%;
-  background:radial-gradient(circle at 50% 35%,#ff8fb8,#ff2a6a 40%,#a0003a 75%,#5a0020);
-  box-shadow:0 0 0 4px var(--gold3),0 0 0 7px #4a1b00,0 8px 0 7px #2a0a00,0 14px 30px rgba(0,0,0,.6),0 0 30px rgba(255,61,154,.6);transition:transform .08s}
+  background:radial-gradient(circle at 50% 35%,var(--s1),var(--s2) 40%,var(--s3) 75%,#1a0010);
+  box-shadow:0 0 0 4px var(--f1),0 0 0 7px var(--f2),0 8px 0 7px #1a0600,0 14px 30px rgba(0,0,0,.6),0 0 30px var(--s4);transition:transform .08s}
 .spin:active{transform:translateY(4px) scale(.98)}
 .spin-ring{position:absolute;inset:6px;border-radius:50%;border:3px dashed rgba(255,240,200,.55);animation:rot 8s linear infinite}
 .spin.spinning .spin-ring{animation-duration:.6s}
@@ -187,3 +189,64 @@ body.freespin .fs-banner{transform:translateX(-50%) scale(1)}
 @keyframes float{50%{transform:translateY(-10px) rotate(-3deg)}}
 @keyframes breathe{50%{transform:scale(1.06)}}
 @media (max-height:700px){.logo{display:none}.reels{height:min(70vw,40vh)}}
+
+/* ===== 상점 / 버프 / 아바타 ===== */
+.lvl-badge{background-size:cover;background-position:center;position:relative}
+.lvl-badge.has-av{box-shadow:0 0 0 2px var(--gold2),0 0 12px rgba(255,200,60,.6)}
+.lvl-badge.has-av b{position:absolute;right:-6px;bottom:-4px;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;
+  background:linear-gradient(180deg,#ffd34d,#e08a00);box-shadow:0 1px 3px rgba(0,0,0,.6)}
+.buffs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;height:0;overflow:hidden;transition:height .3s,margin .3s}
+.buffs.on{height:30px;margin-top:8px}
+.buff{display:flex;align-items:center;gap:3px;height:28px;padding:0 8px 0 3px;border-radius:14px;background:rgba(0,0,0,.55);border:1px solid color-mix(in srgb,var(--f3) 60%,transparent);
+  font-size:12px;box-shadow:0 0 10px color-mix(in srgb,var(--f3) 30%,transparent);animation:buffin .4s cubic-bezier(.3,1.6,.5,1)}
+.buff img{width:24px;height:24px;filter:drop-shadow(0 0 4px rgba(255,220,120,.6))}
+.buff b{font-variant-numeric:tabular-nums;color:var(--gold1)}
+.buff.off{filter:grayscale(1);opacity:.5}
+@keyframes buffin{from{transform:scale(0)}}
+.shop-chip{background:linear-gradient(180deg,#ff5aa8,#a0105a);border-color:#ffc0e0}
+.shop h2{margin-bottom:8px}
+.wallet{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-weight:800}
+.wallet span{padding:4px 10px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,210,80,.35)}
+.wallet small{width:100%;font-size:11px;color:#b89ad8;font-weight:500}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.tab{height:38px;border-radius:12px;font-size:13px;font-weight:800;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08)}
+.tab.on{background:linear-gradient(180deg,#ffd34d,#e08a00);color:#3a1500;box-shadow:0 0 12px rgba(255,200,60,.5)}
+.subtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;scrollbar-width:none}
+.stab{flex:0 0 auto;height:30px;padding:0 12px;border-radius:15px;font-size:12px;font-weight:700;background:rgba(0,0,0,.35);border:1px solid rgba(255,210,80,.25)}
+.stab.on{border-color:var(--gold2);color:var(--gold2);background:rgba(255,200,60,.12)}
+.hint{font-size:12px!important;color:#b89ad8!important;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px 10px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(0,0,0,.3));
+  border:1px solid rgba(255,255,255,.08)}
+.card.equipped{border-color:var(--gold2);box-shadow:0 0 14px rgba(255,200,60,.35),inset 0 0 18px rgba(255,200,60,.12)}
+.card>img{width:76px;height:76px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.card>img.round{border-radius:50%;box-shadow:0 0 0 2px var(--gold2)}
+.card>img.bgthumb{width:100%;height:96px;object-fit:cover;border-radius:10px}
+.cname{font-size:13px;font-weight:800;text-align:center}
+.cbtn{width:100%;height:34px;border-radius:10px;font-size:13px;font-weight:800;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15)}
+.cbtn.buy{background:linear-gradient(180deg,#ffd34d,#e08a00);color:#3a1500;border:0;box-shadow:0 3px 0 #6a3a00}
+.cbtn.gem{background:linear-gradient(180deg,#7ad8ff,#3a6aff);color:#fff;border:0;box-shadow:0 3px 0 #10307a}
+.cbtn.eq{background:transparent;border-color:var(--gold2);color:var(--gold2)}
+.cbtn:disabled{opacity:.45}
+.cbtn:active{transform:translateY(2px)}
+.sw{width:76px;height:76px;display:grid;place-items:center}
+.sw-frame{position:relative;border-radius:14px;background:linear-gradient(180deg,var(--c),#1a0626);box-shadow:0 0 0 3px var(--a),0 0 0 5px #000,0 0 18px var(--b);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px}
+.sw-frame i{border-radius:4px;background:rgba(0,0,0,.45);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--b) 50%,transparent)}
+.sw-spin{width:70px;height:70px;border-radius:50%;font-weight:900;font-size:14px;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.sw-badge{border-radius:50%;width:60px;height:60px;background:radial-gradient(circle at 35% 30%,#fff7c2,var(--gold2) 40%,var(--gold4));color:#5a2500;font-weight:900}
+.sw-title{width:auto;height:76px;font-size:15px;font-weight:900;color:var(--gold1);padding:0 10px;text-shadow:0 0 10px rgba(255,180,40,.8)}
+.sw-fx{position:relative;overflow:hidden;border-radius:14px;background:radial-gradient(circle,#3a1452,#16051f)}
+.sw-fx i{position:absolute;width:12px;height:12px;background:var(--c);left:calc(10% + var(--i)*14%);top:calc(20% + (var(--i)*37%) - (var(--i)*var(--i)*6%));animation:fall 1.6s calc(var(--i)*-.3s) infinite linear}
+.sw-fx i.rect{width:7px;height:11px}
+.sw-fx i.star{clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.sw-fx i.heart{clip-path:path('M6 11 C-4 4 2 -2 6 3 C10 -2 16 4 6 11Z')}
+.sw-fx i.gem{clip-path:polygon(50% 0,100% 40%,50% 100%,0 40%);box-shadow:0 0 8px var(--c)}
+@keyframes fall{from{transform:translateY(-30px) rotate(0)}to{transform:translateY(60px) rotate(360deg)}}
+.clist{display:flex;flex-direction:column;gap:8px}
+.crow{display:flex;align-items:center;gap:10px;padding:8px;border-radius:14px;background:linear-gradient(90deg,rgba(255,255,255,.07),rgba(0,0,0,.25));border:1px solid rgba(255,255,255,.08)}
+.crow>img{width:54px;height:54px;flex:0 0 54px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
+.cinfo{flex:1;min-width:0}.cinfo b{font-size:14px;display:block}.cinfo small{font-size:11px;color:#c8a8ff}
+.cinfo em{font-style:normal;font-size:10px;padding:1px 6px;border-radius:8px;background:#2fd36b;color:#04310f;margin-left:4px}
+.cbuy{display:flex;flex-direction:column;gap:5px;width:92px}.cbuy .cbtn{height:30px;font-size:12px}
+.sheet{max-height:86vh}

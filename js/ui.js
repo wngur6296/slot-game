@@ -2,7 +2,7 @@
 (() => {
   const C = SLOT_CONFIG, E = Economy, $ = (id) => document.getElementById(id);
   const engine = SlotEngine.createEngine(C);
-  let spinning = false, auto = false;
+  let spinning = false, auto = false, autoCount = 0;
   const fmt = (n) => Math.floor(n).toLocaleString();
   Reels.init(engine);
 
@@ -25,6 +25,7 @@
     $('fsLeft').textContent = s.freeSpins; $('fsMult').textContent = C.scatter.freeSpinMultiplier;
     $('spinLabel').textContent = fs ? 'FREE' : auto ? 'STOP' : 'SPIN';
     $('btnDaily').classList.toggle('ready', E.dailyAvailable());
+    Shop.renderBuffs();
     const st = s.streak, m = engine.streakMult(st); $('streak').textContent = `🔥 ${st}연승 x${m}`; $('streak').classList.toggle('on', st >= 2);
   }
   function tick() { const l = E.hourlyLeft(), b = $('btnHourly');
@@ -61,14 +62,18 @@
     if (spinning) return;
     if (!E.canSpin()) { auto = false; noCoins(); hud(); return; }
     spinning = true; $('btnSpin').classList.add('spinning'); Reels.clearWins();
-    const wasFree = E.s.freeSpins > 0; const take = E.takeBet(); hud();
+    const wasFree = E.s.freeSpins > 0;
+    if (auto && !wasFree && !Shop.autopass() && ++autoCount > SHOP_CONFIG.autoSpinFreeLimit) { auto = false; autoCount = 0; $('btnAuto').classList.remove('on'); spinning = false; $('btnSpin').classList.remove('spinning'); hud(); toast(`자동스핀 ${SHOP_CONFIG.autoSpinFreeLimit}회 완료 · 오토 패스로 무제한!`); return; }
+    const buff = Shop.consumeForSpin(wasFree); const take = E.takeBet(buff.xp); hud();
     setWin(wasFree ? `프리스핀 (남은 ${E.s.freeSpins})` : '행운을 빌어요!', 0); $('winbar').classList.remove('flash');
     Audio2.play('spin', { vol: .7 }); Haptic(15);
-    const { grid } = engine.spin(); const ev = engine.evaluate(grid, take.bet, { freeSpin: take.free }); const near = engine.nearMiss(grid);
+    let { grid } = engine.spin(); let ev = engine.evaluate(grid, take.bet, { freeSpin: take.free });
+    if (buff.luck && ev.total === 0 && Math.random() < SHOP_CONFIG.luckRerollChance) { grid = engine.spin().grid; ev = engine.evaluate(grid, take.bet, { freeSpin: take.free }); setTimeout(() => toast('🍀 행운의 부적 발동!'), 300); } // 행운의 부적
+    const near = engine.nearMiss(grid);
     await Reels.spin(grid, { turbo: E.s.settings.turbo, nearMiss: near,
       onStop: (r) => { Audio2.play('stop', { vol: .8, rate: 1 + r * .05 }); Haptic(10); if (r === 2) Audio2.stop('tension'); },
       onAnticipate: () => Audio2.play('tension', { vol: .7 }) });
-    let win = ev.total * ev.mult;
+    let win = ev.total * ev.mult * buff.boost;
     if (win > 0) { E.s.streak++; win = Math.round(win * engine.streakMult(E.s.streak)); } else E.s.streak = 0;
     const ratio = win / take.bet, T = C.winTiers;
     const tier = ev.jackpot ? 'jackpot' : ratio >= T.epic ? 'epic' : ratio >= T.mega ? 'mega' : ratio >= T.big ? 'big' : win > 0 ? 'small' : 'none';
@@ -76,13 +81,14 @@
     if (win > 0) {
       const gems = E.award(win, tier); $('machine').classList.add('hot');
       pts.forEach(([x, y], i) => setTimeout(() => FX.sparkle(x, y, 18), i * 60));
-      const label = ev.mult > 1 || engine.streakMult(E.s.streak) > 1 ? `당첨! x${(ev.mult * engine.streakMult(E.s.streak)).toFixed(1).replace('.0', '')}` : '당첨!';
+      const label = ev.mult * buff.boost > 1 || engine.streakMult(E.s.streak) > 1 ? `당첨! x${(ev.mult * buff.boost * engine.streakMult(E.s.streak)).toFixed(1).replace('.0', '')}` : '당첨!';
       setWin(label, 0); $('winbar').classList.add('flash');
       if (tier === 'small') { Audio2.play('win_small'); Haptic(30); if (pts[0]) FX.coinBurst(pts[Math.floor(pts.length / 2)][0], pts[Math.floor(pts.length / 2)][1], Math.min(40, 8 + Math.round(ratio * 6))); FX.countUp($('winAmount'), 0, win, 700); $('winAmount').textContent = '+' + fmt(win); }
       else { await bigWin(tier, win); setWin(TITLES[tier], win); }
       if (gems) toast(`💎 보너스 젬 +${gems}`);
       setTimeout(() => $('machine').classList.remove('hot'), 1500);
-    } else if (near) setWin('아깝다! 😱', 0); else setWin(wasFree ? `프리스핀 (남은 ${E.s.freeSpins})` : '다시 도전!', 0);
+    } else if (buff.insurance && !take.free) { const r = Math.round(take.bet * buff.insurance); E.s.coins += r; E.save(); setWin('🛡️ 보험 환급', r); }
+    else if (near) setWin('아깝다! 😱', 0); else setWin(wasFree ? `프리스핀 (남은 ${E.s.freeSpins})` : '다시 도전!', 0);
     if (ev.freeSpins) { if (!wasFree) E.s.fsBet = take.bet; E.s.freeSpins += ev.freeSpins; E.save(); await bigWin('freespins', 0, `${ev.freeSpins}회 · 당첨 x${C.scatter.freeSpinMultiplier}`); }
     E.save(); hud(true); spinning = false; $('btnSpin').classList.remove('spinning');
     if (E.s.freeSpins > 0 || auto) setTimeout(spin, (tier === 'none' ? 1 : 2.2) * C.timing.autoDelay * (E.s.settings.turbo ? .6 : 1));
@@ -97,7 +103,7 @@
     modal(`<h2>코인이 부족해요 😢</h2><p>무료 코인은 ${l > 0 ? Math.ceil(l / 60000) + '분 뒤' : '지금'} 받을 수 있어요. 젬으로 코인을 바꾸거나 출석 보상을 받아보세요.</p>
       <button class="btn" id="mRescue">구조 코인 ${fmt(C.economy.bankruptRescue)} 받기</button><button class="btn alt" id="mShop">젬 상점</button>`);
     $('mRescue').onclick = () => { E.s.coins += C.economy.bankruptRescue; E.save(); hud(true); closeModal(); Audio2.play('coin'); };
-    $('mShop').onclick = shop;
+    $('mShop').onclick = () => Shop.open('ex');
   }
 
   // ----- 모달 -----
@@ -115,11 +121,6 @@
       • <b>보너스 3개</b>(어디든): 프리스핀 ${C.scatter.freeSpins}회 + 모든 당첨 x${C.scatter.freeSpinMultiplier} (2개도 베팅 x${C.scatter.pay[2]})<br>
       • <b>연승 보너스</b>: 3연승 x${C.streakMultipliers[2]}, 4연승 x${C.streakMultipliers[3]}, 5연승+ x${C.streakMultipliers[4]}<br>
       • 이론 환수율(RTP) 약 96% · 가상 코인 전용</p>`);
-  }
-  function shop() {
-    modal(`<h2>💎 젬 상점</h2><p>보유 젬: <b>${fmt(E.s.gems)}</b> · 젬은 레벨업, 출석, 큰 당첨으로 얻어요. (실제 결제 없음)</p>
-      ${C.economy.gemShop.map((o, i) => `<button class="btn ${E.s.gems < o.gems ? 'alt' : ''}" data-i="${i}" ${E.s.gems < o.gems ? 'disabled' : ''}>💎${o.gems} → 🪙${fmt(o.coins)}</button>`).join('')}`);
-    document.querySelectorAll('#modalBody .btn[data-i]').forEach((b) => b.onclick = () => { if (E.buy(+b.dataset.i)) { Audio2.play('coin'); FX.coinBurst(innerWidth / 2, innerHeight * .4, 40); hud(true); shop(); } });
   }
   function daily() {
     const avail = E.dailyAvailable(), di = E.dailyDayIndex(), D = C.economy;
@@ -142,15 +143,17 @@
     modal(`<h2>⭐ 레벨 ${s.level}</h2><p>경험치 ${fmt(s.xp)} / ${fmt(C.level.xpNeeded(s.level))} (베팅할수록 쌓여요)<br>다음 레벨 보상: 🪙${fmt(C.level.rewardCoins(s.level + 1))} 💎${C.level.rewardGems(s.level + 1)}</p>
       <h3>🔓 베팅 해금</h3><p>${D.betLevels.map((b, i) => `${s.level >= D.betUnlockLevel[i] ? '✅' : '🔒'} ${fmt(b)} (Lv.${D.betUnlockLevel[i]})`).join('<br>')}</p>`); }
 
+  Shop.init({ modal, closeModal, toast, hud: (a) => hud(a) });
+
   // ----- 입력 -----
   const tap = (id, f) => $(id).addEventListener('click', f);
   tap('btnSpin', () => { if (auto) { auto = false; $('btnAuto').classList.remove('on'); hud(); return; } spin(); });
   tap('betUp', () => { if (spinning || E.s.freeSpins) return; if (E.changeBet(1)) { Audio2.play('click'); hud(); } else toast(`레벨업하면 더 큰 베팅이 열려요`); });
   tap('betDown', () => { if (spinning || E.s.freeSpins) return; if (E.changeBet(-1)) { Audio2.play('click'); hud(); } });
-  tap('btnAuto', () => { auto = !auto; $('btnAuto').classList.toggle('on', auto); Audio2.play('click'); hud(); if (auto) spin(); });
+  tap('btnAuto', () => { auto = !auto; autoCount = 0; $('btnAuto').classList.toggle('on', auto); Audio2.play('click'); hud(); if (auto) spin(); });
   tap('btnTurbo', () => { E.s.settings.turbo = !E.s.settings.turbo; $('btnTurbo').classList.toggle('on', E.s.settings.turbo); E.save(); Audio2.play('click'); });
   tap('btnHourly', () => { const c = E.claimHourly(); if (c) { Audio2.play('win_small'); const b = $('btnHourly').getBoundingClientRect(); FX.coinBurst(b.left + b.width / 2, b.top, 40); toast(`🎁 무료 코인 +${fmt(c)}`); hud(true); tick(); } else toast(`${Math.ceil(E.hourlyLeft() / 60000)}분 뒤에 받을 수 있어요`); });
-  tap('btnDaily', daily); tap('btnInfo', paytable); tap('btnShop', shop); tap('btnMenu', menu); tap('btnLevel', levelInfo);
+  tap('btnDaily', daily); tap('btnInfo', paytable); tap('btnShop', () => Shop.open('ex')); tap('btnStore', () => Shop.open()); tap('btnMenu', menu); tap('btnLevel', levelInfo);
   addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); $('btnSpin').click(); } });
   $('btnTurbo').classList.toggle('on', E.s.settings.turbo);
 
@@ -163,5 +166,5 @@
   }, { once: true });
   document.addEventListener('touchstart', () => Audio2.unlock(), { passive: true });
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__slot = { spin, E, engine, bigWin }; // 디버그/테스트용
+  window.__slot = { spin, E, engine, bigWin, Shop }; // 디버그/테스트용
 })();

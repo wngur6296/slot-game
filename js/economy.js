@@ -3,18 +3,32 @@ const Economy = (() => {
   const C = SLOT_CONFIG, E = C.economy;
   const fresh = () => ({ v: C.version, coins: E.startCoins, gems: E.startGems, level: 1, xp: 0, betIdx: 0,
     lastHourly: 0, lastDaily: '', dailyStreak: 0, streak: 0, freeSpins: 0, fsTotal: 0,
-    settings: { sfx: true, bgm: true, turbo: false }, stats: { spins: 0, wagered: 0, won: 0, biggest: 0, jackpots: 0 } });
+    settings: { sfx: true, bgm: true, turbo: false }, stats: { spins: 0, wagered: 0, won: 0, biggest: 0, jackpots: 0 },
+    ...shopFields() });
+  // v2: 상점 (보유/장착/버프)
+  function shopFields() { const D = (typeof SHOP_CONFIG !== 'undefined' ? SHOP_CONFIG.defaults : {});
+    return { owned: Object.values(D), equipped: { ...D }, buffs: {}, autopassUntil: 0 }; }
+  // 저장 데이터 마이그레이션: 버전별 단계적으로 업그레이드
+  function migrate(d) {
+    if (!d || typeof d !== 'object') return null;
+    if (!d.v || d.v < 2) { Object.assign(d, shopFields()); d.v = 2; }
+    // 이후 버전: if (d.v < 3) { ...; d.v = 3; }
+    const f = fresh(); const out = Object.assign(f, d);
+    out.settings = Object.assign(fresh().settings, d.settings); out.stats = Object.assign(fresh().stats, d.stats);
+    out.equipped = Object.assign(shopFields().equipped, d.equipped); out.owned = [...new Set([...shopFields().owned, ...(d.owned || [])])];
+    out.buffs = d.buffs || {}; return out;
+  }
   let s = load();
-  function load() { try { const d = JSON.parse(localStorage.getItem(C.saveKey)); if (d && d.v === C.version) return Object.assign(fresh(), d); } catch (e) {} return fresh(); }
+  function load() { try { const d = migrate(JSON.parse(localStorage.getItem(C.saveKey))); if (d) return d; } catch (e) {} return fresh(); }
   const save = () => { try { localStorage.setItem(C.saveKey, JSON.stringify(s)); } catch (e) {} };
   const listeners = []; const emit = (ev, d) => listeners.forEach((f) => f(ev, d));
   const bet = () => E.betLevels[s.betIdx];
   function maxBetIdx() { let i = 0; E.betUnlockLevel.forEach((lv, k) => { if (s.level >= lv) i = k; }); return i; }
   function changeBet(d) { const ni = Math.max(0, Math.min(maxBetIdx(), s.betIdx + d)); if (ni === s.betIdx) return false; s.betIdx = ni; save(); return true; }
   function canSpin() { return s.freeSpins > 0 || s.coins >= bet(); }
-  function takeBet() {
+  function takeBet(xpMult = 1) {
     if (s.freeSpins > 0) { s.freeSpins--; save(); return { free: true, bet: s.fsBet || bet() }; }
-    const b = bet(); if (s.coins < b) return null; s.coins -= b; s.stats.spins++; s.stats.wagered += b; addXp(b * C.level.xpPerCoinBet); save(); return { free: false, bet: b };
+    const b = bet(); if (s.coins < b) return null; s.coins -= b; s.stats.spins++; s.stats.wagered += b; addXp(b * C.level.xpPerCoinBet * xpMult); save(); return { free: false, bet: b };
   }
   function addXp(x) {
     s.xp += x; while (s.xp >= C.level.xpNeeded(s.level)) { s.xp -= C.level.xpNeeded(s.level); s.level++;
@@ -34,5 +48,5 @@ const Economy = (() => {
   function buy(i) { const o = E.gemShop[i]; if (!o || s.gems < o.gems) return false; s.gems -= o.gems; s.coins += o.coins; save(); return true; }
   function reset() { s = fresh(); save(); }
   return { get s() { return s; }, save, on: (f) => listeners.push(f), bet, changeBet, maxBetIdx, canSpin, takeBet, award, hourlyLeft, claimHourly,
-    dailyAvailable, dailyDayIndex, claimDaily, buy, reset };
+    dailyAvailable, dailyDayIndex, claimDaily, buy, reset, migrate };
 })();

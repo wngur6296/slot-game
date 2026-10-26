@@ -4,7 +4,7 @@
  * ========================================================= */
 (function (root) {
   const CONFIG = {
-    version: 1,
+    version: 2,            // 저장 데이터 버전 (구조 바꾸면 +1 하고 economy.js migrate에 단계 추가)
     saveKey: 'luckyslot_save_v1',
 
     // ---- 심볼 (img: assets/img/*.webp) ----

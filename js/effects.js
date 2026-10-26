@@ -4,7 +4,13 @@ const FX = (() => {
   function resize() { dpr = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); }
   addEventListener('resize', resize); resize();
   const rnd = (a, b) => a + Math.random() * (b - a);
-  const CONF = ['#ffd34d', '#ff3d9a', '#4de1ff', '#7dff7a', '#ffffff', '#b266ff'];
+  let CONF = ['#ffd34d', '#ff3d9a', '#4de1ff', '#7dff7a', '#ffffff', '#b266ff'], SHAPE = 'rect';
+  function setStyle(st) { if (!st) return; CONF = st.colors; SHAPE = st.shape; } // 상점 '당첨 이펙트'
+  function shapePath(w, h) { g.beginPath();
+    if (SHAPE === 'star') { for (let i = 0; i < 10; i++) { const r = i % 2 ? w * .4 : w, a = i * Math.PI / 5 - Math.PI / 2; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } }
+    else if (SHAPE === 'heart') { g.moveTo(0, h * .35); g.bezierCurveTo(-w * 1.2, -h * .2, -w * .4, -h * .9, 0, -h * .3); g.bezierCurveTo(w * .4, -h * .9, w * 1.2, -h * .2, 0, h * .35); }
+    else if (SHAPE === 'gem') { g.moveTo(0, -h * .6); g.lineTo(w * .6, -h * .1); g.lineTo(0, h * .6); g.lineTo(-w * .6, -h * .1); }
+    g.closePath(); g.fill(); }
   function coin(x, y, vx, vy) { P.push({ k: 'coin', x, y, vx, vy, r: rnd(9, 15), a: rnd(0, 6.28), va: rnd(.1, .3), life: 1, g: .35 }); }
   function coinRain(n = 60, dur = 1500) {
     let made = 0; const iv = setInterval(() => { for (let i = 0; i < 4 && made < n; i++, made++) coin(rnd(0, W), -20, rnd(-1, 1), rnd(2, 6)); if (made >= n) clearInterval(iv); }, dur / (n / 4)); loop();
@@ -24,7 +30,7 @@ const FX = (() => {
       const p = P[i]; p.vy += p.g; p.x += p.vx; p.y += p.vy;
       if (p.k === 'coin') { p.a += p.va; if (p.y > H + 30) { P.splice(i, 1); continue; } drawCoin(p); }
       else if (p.k === 'conf') { p.a += p.va; p.sway += .08; p.x += Math.sin(p.sway) * .8; p.vy = Math.min(p.vy, 4); if (p.y > H + 20) { P.splice(i, 1); continue; }
-        g.save(); g.translate(p.x, p.y); g.rotate(p.a); g.scale(1, Math.cos(p.sway)); g.fillStyle = p.c; g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); g.restore(); }
+        g.save(); g.translate(p.x, p.y); g.rotate(p.a); g.scale(1, Math.cos(p.sway)); g.fillStyle = p.c; if (SHAPE === 'rect') g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); else { if (SHAPE === 'gem') { g.shadowColor = p.c; g.shadowBlur = 8; } shapePath(p.w * .9, p.h); } g.restore(); }
       else { p.life -= p.decay; p.vx *= .97; if (p.life <= 0) { P.splice(i, 1); continue; }
         g.globalCompositeOperation = 'lighter'; g.globalAlpha = p.life; g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, p.r * (1 + (1 - p.life)), 0, 6.283); g.fill(); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
     }
@@ -37,5 +43,5 @@ const FX = (() => {
       (function step(t) { const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3), v = Math.round(from + (to - from) * e);
         el.textContent = v.toLocaleString(); if (onTick && v !== last) onTick(v); last = v; if (k < 1 && !el._skip) requestAnimationFrame(step); else { el.textContent = to.toLocaleString(); el._skip = false; res(); } })(t0); });
   }
-  return { coinRain, coinBurst, confetti, sparkle, fireworks, shake, countUp };
+  return { setStyle, coinRain, coinBurst, confetti, sparkle, fireworks, shake, countUp };
 })();

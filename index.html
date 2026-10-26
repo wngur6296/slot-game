@@ -46,13 +46,15 @@
     </div>
     <div class="winbar" id="winbar"><span id="winLabel">행운을 빌어요!</span><b id="winAmount"></b></div>
     <div class="streak" id="streak"></div>
+    <div class="buffs" id="buffs"></div>
   </main>
 
   <!-- 하단 컨트롤 -->
   <footer class="controls">
     <div class="bonus-row">
-      <button class="chip" id="btnHourly"><span>🎁</span><em id="hourlyText">무료 코인</em></button>
-      <button class="chip" id="btnDaily"><span>📅</span><em>출석 보상</em></button>
+      <button class="chip" id="btnHourly"><span>🎁</span><em id="hourlyText">무료</em></button>
+      <button class="chip" id="btnDaily"><span>📅</span><em>출석</em></button>
+      <button class="chip shop-chip" id="btnStore"><span>🛒</span><em>상점</em></button>
       <button class="chip" id="btnInfo"><span>📜</span><em>배당표</em></button>
     </div>
     <div class="spin-row">
@@ -93,9 +95,11 @@
 </div>
 <script src="js/config.js"></script>
 <script src="js/engine.js"></script>
+<script src="js/shop-config.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/economy.js"></script>
 <script src="js/effects.js"></script>
+<script src="js/shop.js"></script>
 <script src="js/reels.js"></script>
 <script src="js/ui.js"></script>
 </body>

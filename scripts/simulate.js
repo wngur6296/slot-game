@@ -2,13 +2,16 @@
 // 게임과 똑같은 js/engine.js + js/config.js 를 사용합니다. (프리스핀·연승배수 포함)
 const C = require('../js/config.js'); const { createEngine, makeRng } = require('../js/engine.js');
 const N = +process.argv[2] || 3_000_000; const bet = 100;
+// 버프 시뮬: LUCK=1 (행운의 부적 상시), BOOST=1 (2배 부스터 상시)
+const SHOP = require('../js/shop-config.js'); const LUCK = !!process.env.LUCK, BOOST = !!process.env.BOOST;
 const E = createEngine(C, makeRng(12345));
 let wagered = 0, won = 0, hits = 0, spins = 0, fsTrig = 0, jackpots = 0, near = 0, streak = 0, big = 0, mega = 0, maxWin = 0;
 const bySym = {};
 function play(free) {
-  const { grid } = E.spin(); const r = E.evaluate(grid, bet, { freeSpin: free });
+  let { grid } = E.spin(); let r = E.evaluate(grid, bet, { freeSpin: free });
+  if (LUCK && !free && r.total === 0 && Math.random() < SHOP.luckRerollChance) { grid = E.spin().grid; r = E.evaluate(grid, bet, { freeSpin: free }); }
   if (E.nearMiss(grid)) near++;
-  let win = r.total * r.mult;
+  let win = r.total * r.mult * (BOOST && !free ? 2 : 1);
   if (win > 0) { streak++; win = Math.round(win * E.streakMult(streak)); } else streak = 0;
   if (win > 0) hits++;
   if (win >= bet * C.winTiers.mega) mega++; else if (win >= bet * C.winTiers.big) big++;
