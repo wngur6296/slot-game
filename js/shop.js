@@ -8,13 +8,14 @@ const Shop = (() => {
   // ---------- 꾸미기 적용 ----------
   function applyCosmetics() {
     const eq = E.s.equipped, root = document.documentElement.style;
-    const fr = item(eq.frame) || item(S.defaults.frame); Object.entries(fr.vars).forEach(([k, v]) => root.setProperty('--' + k, v));
+    const TH = SLOT_CONFIG.theme || {};   // 기본 스킨 장착 시 슬롯 테마 색/배경 사용
+    const fr = eq.frame === S.defaults.frame && TH.vars ? { vars: TH.vars } : (item(eq.frame) || item(S.defaults.frame)); Object.entries(fr.vars).forEach(([k, v]) => root.setProperty('--' + k, v));
     const sp = item(eq.spin) || item(S.defaults.spin); Object.entries(sp.vars).forEach(([k, v]) => root.setProperty('--' + k, v));
-    const bg = item(eq.bg) || item(S.defaults.bg); document.querySelector('.bg').style.backgroundImage = `url(assets/img/${bg.img}.webp)`;
+    const bg = item(eq.bg) || item(S.defaults.bg); document.querySelector('.bg').style.backgroundImage = `url(assets/img/${eq.bg === S.defaults.bg && TH.bg ? TH.bg : bg.img}.webp)`;
     const fx = item(eq.fx) || item(S.defaults.fx); FX.setStyle(fx.fx);
     const av = item(eq.avatar); const b = document.querySelector('.lvl-badge');
     b.style.backgroundImage = av && av.img ? `url(assets/img/${av.img}.webp)` : ''; b.classList.toggle('has-av', !!(av && av.img));
-    const ti = item(eq.title) || item(S.defaults.title); document.querySelector('.logo-sub').textContent = ti.name;
+    const ti = item(eq.title) || item(S.defaults.title); document.querySelector('.logo-sub').textContent = SLOT_CONFIG.name || ti.name;
   }
 
   // ---------- 버프 ----------
@@ -76,7 +77,7 @@ const Shop = (() => {
   function render() {
     const body = document.getElementById('modalBody'); if (!body || !body.querySelector('.shop')) return;
     const s = E.s, tabs = [['buff', '⚡ 버프'], ['skin', '🎨 꾸미기'], ['inv', '🎒 보유'], ['ex', '💱 환전']];
-    let h = `<div class="shop"><h2>🛒 상점</h2><div class="wallet"><span>🪙 ${fmt(s.coins)}</span><span>💎 ${fmt(s.gems)}</span><small>가상 재화 전용 · 실제 결제 없음</small></div>
+    let h = `<div class="shop"><h2>🛒 상점</h2><div class="wallet"><span>🪙 ${fmt(s.coins)}</span><span>💎 ${fmt(s.gems)}</span><small>코인은 게임에서, 젬은 레벨업·출석·미션으로 획득</small></div>
       <div class="tabs">${tabs.map(([k, n]) => `<button class="tab ${tab === k ? 'on' : ''}" data-tab="${k}">${n}</button>`).join('')}</div>`;
     if (tab === 'buff') {
       h += `<p class="hint">버프 가격은 현재 베팅(${fmt(E.bet())})에 비례해요. 구매 시 베팅 이하에서만 적용돼요.</p><div class="clist">`;

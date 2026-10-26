@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="럭키7 슬롯">
 <meta name="theme-color" content="#14051f">
-<title>럭키 7 슬롯</title>
+<title>LUCKY 7 CASINO</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/img/icon-180.png">
 <link rel="preload" as="image" href="assets/img/bg.webp">
@@ -26,14 +26,17 @@
     </button>
     <div class="pill coins"><span class="ico coin-ico"></span><b id="coinText">0</b></div>
     <button class="pill gems" id="btnShop"><span class="ico gem-ico"></span><b id="gemText">0</b><span class="plus">+</span></button>
+    <button class="icon-btn" id="btnHome" aria-label="로비">⌂</button>
     <button class="icon-btn" id="btnMenu" aria-label="메뉴">☰</button>
   </header>
 
-  <div class="logo"><span class="logo-top">LUCKY</span><span class="logo-7">7</span><span class="logo-sub">클래식 슬롯</span></div>
+  <div class="logo"><span class="logo-top" id="logoA">LUCKY</span><span class="logo-7" id="logoB">7</span><span class="logo-sub">클래식 슬롯</span></div>
+  <div class="character" id="character"><img id="charImg" alt=""><div class="bubble" id="charBubble"></div></div>
 
   <!-- 슬롯 머신 -->
   <main class="machine" id="machine">
     <div class="marquee" id="marquee"></div>
+    <div class="jp-pool" id="jpPool"><small>PROGRESSIVE JACKPOT</small><b id="jpPoolVal">0</b></div>
     <div class="fs-banner" id="fsBanner">프리스핀 <b id="fsLeft">0</b> · 당첨 x<span id="fsMult">2</span></div>
     <div class="reels-wrap">
       <div class="reels" id="reels">
@@ -52,7 +55,7 @@
   <!-- 하단 컨트롤 -->
   <footer class="controls">
     <div class="bonus-row">
-      <button class="chip" id="btnHourly"><span>🎁</span><em id="hourlyText">무료</em></button>
+      <button class="chip" id="btnHourly"><span>🎁</span><em id="hourlyText">충전</em></button>
       <button class="chip" id="btnDaily"><span>📅</span><em>출석</em></button>
       <button class="chip shop-chip" id="btnStore"><span>🛒</span><em>상점</em></button>
       <button class="chip" id="btnInfo"><span>📜</span><em>배당표</em></button>
@@ -71,6 +74,27 @@
     </div>
   </footer>
 
+  <!-- 로비 (게임 선택 / 이벤트 / 지갑) -->
+  <section class="lobby" id="lobby">
+    <header class="lb-top">
+      <button class="lb-prof" id="lbProf"><span class="lvl-badge" id="lbAvatar"><b id="lbLvl">1</b></span><span class="lb-name"><em id="lbVip">BRONZE</em><small id="lbTitle">초보 도박사</small></span></button>
+      <button class="lb-bal" id="lbBal"><span class="ico coin-ico"></span><b id="lbCoins">0</b><span class="lb-plus">+</span></button>
+      <button class="lb-gem" id="lbGem"><span class="ico gem-ico"></span><b id="lbGems">0</b></button>
+    </header>
+    <div class="lb-pages">
+      <div class="lb-page on" data-page="home" id="pgHome"></div>
+      <div class="lb-page" data-page="promo" id="pgPromo"></div>
+      <div class="lb-page" data-page="wallet" id="pgWallet"></div>
+    </div>
+    <nav class="lb-nav">
+      <button class="on" data-go="home"><i>🎰</i>게임</button>
+      <button data-go="promo"><i>🎁</i>이벤트</button>
+      <button data-go="wallet"><i>👛</i>지갑</button>
+      <button data-go="shop"><i>🛒</i>상점</button>
+      <button data-go="menu"><i>☰</i>메뉴</button>
+    </nav>
+  </section>
+
   <canvas id="fx"></canvas>
 
   <!-- 큰 당첨 오버레이 -->
@@ -88,12 +112,18 @@
 
   <!-- 첫 탭 (오디오 잠금 해제) -->
   <div class="intro" id="intro">
-    <div class="intro-logo"><img src="assets/img/seven.webp" alt=""><div>LUCKY 7</div></div>
-    <p>가상 코인 전용 게임 · 실제 돈은 사용되지 않아요</p>
+    <div class="intro-logo"><img src="assets/img/seven.webp" alt=""><div>LUCKY 7</div><span>CASINO</span></div>
+    <p>LUCKY 7 CASINO</p>
     <button class="start" id="btnStart">탭해서 시작</button>
   </div>
 </div>
 <script src="js/config.js"></script>
+<script src="js/slots/classic.js"></script>
+<script src="js/slots/fruit.js"></script>
+<script src="js/slots/dragon.js"></script>
+<script src="js/slots/mega.js"></script>
+<script src="js/slots/bunny.js"></script>
+<script src="js/slots.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/shop-config.js"></script>
 <script src="js/audio.js"></script>
@@ -102,5 +132,6 @@
 <script src="js/shop.js"></script>
 <script src="js/reels.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/lobby.js"></script>
 </body>
 </html>

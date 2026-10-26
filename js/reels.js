@@ -4,7 +4,7 @@ const Reels = (() => {
   const img = (s) => `<div class="cell" data-s="${s}"><img src="assets/img/${C.symbols[s].img}.webp" alt="${C.symbols[s].name}" draggable="false"></div>`;
   function init(eng) {
     engine = eng; reelEls = [...document.querySelectorAll('.reel')];
-    measure(); addEventListener('resize', measure);
+    measure(); if (!init.done) { addEventListener('resize', measure); init.done = true; }
     reelEls.forEach((el, i) => { const s = engine.strips[i], st = Math.floor(Math.random() * s.length);
       el.querySelector('.track').innerHTML = [0, 1, 2, 3, 4].map((k) => img(s[(st + k) % s.length])).join(''); });
   }
@@ -50,6 +50,10 @@ const Reels = (() => {
     reelEls.forEach((el, r) => vis(el).forEach((c, row) => { c.classList.toggle('win', hl.has(r + ':' + row)); c.classList.toggle('dim', wins.length > 0 && !hl.has(r + ':' + row)); }));
     return [...hl].map((k) => { const [r, row] = k.split(':').map(Number); const b = vis(reelEls[r])[row].getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; });
   }
+  // 확장 와일드: r번 릴의 보이는 3칸을 와일드로 교체 (아래→위로 차오르는 연출)
+  function expand(r) { const cells = vis(reelEls[r]); reelEls[r].classList.add('expanding');
+    return new Promise((res) => { cells.slice().reverse().forEach((c, k) => setTimeout(() => { c.outerHTML = img('wild').replace('class="cell"', 'class="cell grow"'); }, k * 140));
+      setTimeout(() => { reelEls[r].classList.remove('expanding'); res(); }, 700); }); }
   function clearWins() { const svg = document.getElementById('lines'); svg.innerHTML = ''; document.querySelectorAll('.cell.win,.cell.dim').forEach((c) => c.classList.remove('win', 'dim')); }
-  return { init, spin, showWins, clearWins, current };
+  return { init, spin, showWins, clearWins, current, expand };
 })();

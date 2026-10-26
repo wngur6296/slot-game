@@ -29,21 +29,32 @@
       const grid = strips.map((s, r) => Array.from({ length: C.rows }, (_, row) => s[(stops[r] + row) % s.length]));
       return { stops, grid };
     }
+    const F = C.features || {};
     function lineSymbol(cells) {
       if (cells.some((s) => C.symbols[s].scatter)) return null;
       const base = cells.find((s) => !C.symbols[s].wild);
       if (!base) return 'wild';
+      if (C.symbols[base].noWild) return cells.every((s) => s === base) ? base : null; // 와일드 대체 불가 심볼
       return cells.every((s) => s === base || C.symbols[s].wild) ? base : null;
     }
     function evaluate(grid, bet, opts = {}) {
-      const lineBet = bet / lineCount; const wins = []; let total = 0; let jackpot = false;
+      let expanded = null;
+      if (F.expandWild) { const r = F.expandWild.reel; if (grid[r].some((s) => C.symbols[s].wild)) { grid = grid.map((c) => c.slice()); grid[r] = grid[r].map(() => 'wild'); expanded = r; } }
+      const lineBet = bet / lineCount; const wins = []; let total = 0; let jackpot = false, progressive = false;
+      const isWild = (s) => C.symbols[s].wild;
       C.paylines.forEach((pl, li) => {
-        const cells = pl.map((row, reel) => grid[reel][row]);
+        const cells = pl.map((row, reel) => grid[reel][row]); const pos = pl.map((row, reel) => [reel, row]);
         const sym = lineSymbol(cells);
-        if (sym) { const p = C.paytable[sym] * lineBet; wins.push({ line: li, sym, pay: p, cells: pl.map((row, reel) => [reel, row]) }); total += p; if (sym === 'wild') jackpot = true; }
-        else if (C.cherryTwo && cells[0] === 'cherry' && (cells[1] === 'cherry' || C.symbols[cells[1]].wild)) {
-          const p = C.cherryTwo * lineBet; wins.push({ line: li, sym: 'cherry', pay: p, cells: [[0, pl[0]], [1, pl[1]]] }); total += p;
+        if (sym) {
+          let p = (C.paytable[sym] || 0) * lineBet;
+          if (F.wildMultiplier && sym !== 'wild') p *= Math.pow(F.wildMultiplier, cells.filter(isWild).length);
+          if (F.progressive && sym === F.progressive.sym) progressive = true;
+          if (sym === C.jackpotSymbol) jackpot = true;
+          wins.push({ line: li, sym, pay: p, cells: pos }); total += p; return;
         }
+        const two = C.twoKind && Object.entries(C.twoKind).find(([k]) => cells[0] === k && (cells[1] === k || isWild(cells[1])));
+        if (two) { const p = two[1] * lineBet; wins.push({ line: li, sym: two[0], pay: p, cells: pos.slice(0, 2) }); total += p; return; }
+        if (C.mixPay && cells.every((s) => C.symbols[s].fruit || isWild(s))) { const p = C.mixPay * lineBet; wins.push({ line: li, sym: 'mix', pay: p, cells: pos }); total += p; }
       });
       const scat = []; grid.forEach((col, r) => { const row = col.findIndex((s) => C.symbols[s].scatter); if (row >= 0) scat.push([r, row]); }); // 릴당 최대 1개
       const sc = Math.min(scat.length, 3); let freeSpins = 0;
@@ -51,7 +62,7 @@
       if (sc >= C.scatter.freeSpinsAt) freeSpins = C.scatter.freeSpins;
       let mult = 1;
       if (opts.freeSpin) mult *= C.scatter.freeSpinMultiplier;
-      return { wins, base: total, mult, total, freeSpins, jackpot, scatterCount: scat.length };
+      return { grid, wins, base: total, mult, total, freeSpins, jackpot, progressive, expanded, scatterCount: scat.length };
     }
     function streakMult(streak) { const a = C.streakMultipliers; return a[Math.min(streak, a.length) - 1] || 1; }
     // 니어미스: 1·2번 릴만 보고 3번 릴에서 터질 수 있는지

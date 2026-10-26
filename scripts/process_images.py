@@ -27,3 +27,11 @@ for n in ['av_cat','av_fox','av_dragon']:  # 아바타는 원형 마스크로 �
     Image.open(f'{S}/{n}.jpg').convert('RGB').resize((160,160),Image.LANCZOS).save(f'{O}/{n}.webp',quality=84,method=6)
 for n in ['bg_neon','bg_royal','bg_ocean']:
     bg=Image.open(f'{S}/{n}.jpg').convert('RGB'); bg.resize((720,int(720*bg.height/bg.width)),Image.LANCZOS).save(f'{O}/{n}.webp',quality=78,method=6)
+
+# ---- v3: 슬롯별 심볼/배경/캐릭터 ----
+import glob
+for f in sorted(glob.glob(f'{S}/[bfdm]_*.jpg')): keyed(os.path.basename(f)[:-4], 224)
+for n in ['bg_bunny','bg_fruit','bg_dragon','bg_mega']:
+    bg=Image.open(f'{S}/{n}.jpg').convert('RGB'); bg.resize((720,int(720*bg.height/bg.width)),Image.LANCZOS).save(f'{O}/{n}.webp',quality=76,method=6)
+for n in ['ch_bunny_idle','ch_bunny_win','ch_bunny_sad']:  # 캐릭터: CSS 마스크로 가장자리 페이드
+    im=Image.open(f'{S}/{n}.jpg').convert('RGB'); im.resize((384,512),Image.LANCZOS).save(f'{O}/{n}.webp',quality=82,method=6)
