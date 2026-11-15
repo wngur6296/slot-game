@@ -4,9 +4,11 @@ const Economy = (() => {
   const fresh = () => ({ v: C.version, coins: E.startCoins, gems: E.startGems, level: 1, xp: 0, betIdx: 0,
     lastHourly: 0, lastDaily: '', dailyStreak: 0, streak: 0, freeSpins: 0, fsTotal: 0,
     settings: { sfx: true, bgm: true, turbo: false }, stats: { spins: 0, wagered: 0, won: 0, biggest: 0, jackpots: 0 },
-    ...shopFields(), ...v3Fields() });
+    ...shopFields(), ...v3Fields(), ...v4Fields() });
   // v3: 멀티 슬롯 · VIP · 미션 · 거래내역 · 누적잭팟
   function v3Fields() { return { lastSlot: 'classic', pools: {}, vipPts: 0, tx: [], missions: { day: '', prog: {}, claimed: [] }, slotsPlayed: {}, lastCharge: 0 }; }
+  // v4: 테이블/카드/인스턴트 게임 (룰렛 히스토리, 바카라 로드, 플레이 기록)
+  function v4Fields() { return { lastGame: 'classic', tablesPlayed: {}, rouletteHist: [], baccaratBead: [], baccaratBig: [], crashHist: [] }; }
   // v2: 상점 (보유/장착/버프)
   function shopFields() { const D = (typeof SHOP_CONFIG !== 'undefined' ? SHOP_CONFIG.defaults : {});
     return { owned: Object.values(D), equipped: { ...D }, buffs: {}, autopassUntil: 0 }; }
@@ -15,7 +17,7 @@ const Economy = (() => {
     if (!d || typeof d !== 'object') return null;
     if (!d.v || d.v < 2) { Object.assign(d, shopFields()); d.v = 2; }
     if (d.v < 3) { Object.assign(d, v3Fields(), { lastCharge: d.lastHourly || 0, vipPts: (d.stats && d.stats.wagered) || 0 }); d.v = 3; }
-    // 이후 버전: if (d.v < 4) { ...; d.v = 4; }
+    if (d.v < 4) { Object.assign(d, v4Fields(), { lastGame: d.lastSlot || 'classic' }); d.v = 4; }
     const f = fresh(); const out = Object.assign(f, d);
     out.settings = Object.assign(fresh().settings, d.settings); out.stats = Object.assign(fresh().stats, d.stats);
     out.equipped = Object.assign(shopFields().equipped, d.equipped); out.owned = [...new Set([...shopFields().owned, ...(d.owned || [])])];
@@ -31,6 +33,20 @@ const Economy = (() => {
   function maxBetIdx() { let i = 0; E.betUnlockLevel.forEach((lv, k) => { if (s.level >= lv) i = k; }); return i; }
   function changeBet(d) { const ni = Math.max(C.minBetIdx || 0, Math.min(maxBetIdx(), s.betIdx + d)); if (ni === s.betIdx) return false; s.betIdx = ni; save(); return true; }
   function canSpin() { return s.freeSpins > 0 || s.coins >= bet(); }
+  // 테이블 게임용 베팅. round=false 이면 더블/스플릿/추가칩처럼 같은 라운드의 추가 판돈만 차감
+  function takeWager(amount, xpMult = 1, round = true) {
+    amount = Math.floor(amount);
+    if (amount <= 0 || s.coins < amount) return null;
+    s.coins -= amount; s.stats.wagered += amount; s.vipPts += amount; mission('bet', amount);
+    if (round) { s.stats.spins++; mission('spins', 1); }
+    addXp(amount * C.level.xpPerCoinBet * xpMult); save(); return amount;
+  }
+  function markPlayed(id, table) {
+    const today = new Date().toLocaleDateString('sv');
+    const bag = table ? (s.tablesPlayed = s.tablesPlayed || {}) : (s.slotsPlayed = s.slotsPlayed || {});
+    if (bag[id] !== today) { bag[id] = today; mission(table ? 'tables' : 'slots', 1); }
+    s.lastGame = id; if (!table) s.lastSlot = id; save();
+  }
   function takeBet(xpMult = 1) {
     if (s.freeSpins > 0) { s.freeSpins--; save(); return { free: true, bet: s.fsBet || bet() }; }
     const b = bet(); if (s.coins < b) return null; s.coins -= b; s.stats.spins++; s.stats.wagered += b; s.vipPts += b; mission('bet', b); mission('spins', 1); addXp(b * C.level.xpPerCoinBet * xpMult); save(); return { free: false, bet: b };
@@ -76,6 +92,6 @@ const Economy = (() => {
   function exportCode() { save(); const j = JSON.stringify(s); const b = btoa(unescape(encodeURIComponent(j))); return `L7S${C.version}.${b}.${hash(b)}`; }
   function importCode(code) { try { const [, b, h] = code.trim().split('.'); if (!b || hash(b) !== h) return false;
       const d = migrate(JSON.parse(decodeURIComponent(escape(atob(b))))); if (!d || typeof d.coins !== 'number') return false; s = d; save(); return true; } catch (e) { return false; } }
-  return { get s() { return s; }, save, on: (f) => listeners.push(f), bet, changeBet, maxBetIdx, canSpin, takeBet, award, hourlyLeft, claimHourly,
+  return { get s() { return s; }, save, on: (f) => listeners.push(f), bet, changeBet, maxBetIdx, canSpin, takeBet, takeWager, markPlayed, award, hourlyLeft, claimHourly,
     dailyAvailable, dailyDayIndex, claimDaily, buy, reset, migrate, tx, vip, chargeLeft, chargeAmount, charge, missionsToday, mission, claimMission, saveSlot, slotInfo, loadSlot, exportCode, importCode };
 })();

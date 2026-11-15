@@ -72,8 +72,7 @@
   // ----- 슬롯 입장 -----
   function enterSlot(id) {
     const d = Slots.apply(id); engine = SlotEngine.createEngine(C); Reels.init(engine); Reels.clearWins();
-    E.s.lastSlot = id; E.s.slotsPlayed = E.s.slotsPlayed || {}; const today = new Date().toLocaleDateString('sv');
-    if (E.s.slotsPlayed[id] !== today) { E.s.slotsPlayed[id] = today; E.mission('slots', 1); }
+    E.markPlayed(id, false);
     if (E.s.betIdx < (d.minBetIdx || 0)) E.s.betIdx = d.minBetIdx;
     document.body.dataset.slot = id; $('logoA').textContent = d.theme.logo[0]; $('logoB').textContent = d.theme.logo[1];
     $('logoB').classList.toggle('long', d.theme.logo[1].length > 2);

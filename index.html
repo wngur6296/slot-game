@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="assets/img/icon-180.png">
 <link rel="preload" as="image" href="assets/img/bg.webp">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/games.css">
 </head>
 <body>
 <div id="app">
@@ -95,6 +96,16 @@
     </nav>
   </section>
 
+  <section class="table" id="table">
+    <header class="tb-hud">
+      <button class="icon-btn" id="tbHome" aria-label="로비">⌂</button>
+      <div class="tb-title"><b id="tbName"></b><small id="tbSub"></small></div>
+      <button class="pill coins" id="tbCoins"><span class="ico coin-ico"></span><b>0</b></button>
+      <button class="icon-btn" id="tbHelp" aria-label="규칙">?</button>
+    </header>
+    <div class="tb-stage" id="tbStage"></div>
+  </section>
+
   <canvas id="fx"></canvas>
 
   <!-- 큰 당첨 오버레이 -->
@@ -132,6 +143,15 @@
 <script src="js/shop.js"></script>
 <script src="js/reels.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/cards.js"></script>
+<script src="js/games/blackjack.js"></script>
+<script src="js/games/roulette.js"></script>
+<script src="js/games/baccarat.js"></script>
+<script src="js/games/vpoker.js"></script>
+<script src="js/games/crash.js"></script>
+<script src="js/games/plinko.js"></script>
+<script src="js/games/mines.js"></script>
+<script src="js/games.js"></script>
 <script src="js/lobby.js"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
  * ========================================================= */
 (function (root) {
   const CONFIG = {
-    version: 3,            // 저장 데이터 버전 (구조 바꾸면 +1 하고 economy.js migrate에 단계 추가)
+    version: 4,            // 저장 데이터 버전 (구조 바꾸면 +1 하고 economy.js migrate에 단계 추가)
     saveKey: 'luckyslot_save_v1',
 
     // ★ 슬롯별 심볼/확률/배당/테마는 js/slots/*.js 에 있습니다. (아래는 모든 슬롯 공통)
@@ -39,6 +39,7 @@
         { id: 'm4', key: 'freespins', goal: 1, name: '프리스핀 1회 발동',    coins: 4000, gems: 2 },
         { id: 'm5', key: 'slots', goal: 3,     name: '서로 다른 슬롯 3종 플레이', coins: 3000, gems: 1 },
         { id: 'm6', key: 'bigwin', goal: 1,    name: 'BIG WIN 이상 1회',      coins: 6000, gems: 3 },
+        { id: 'm7', key: 'tables', goal: 3,    name: '테이블·카드 게임 3종 플레이', coins: 4000, gems: 2 },
       ],
       bankruptRescue: 500,   // 코인 부족 시 1회 구조금 (시간당 보너스와 별개)
       gemShop: [             // 젬 -> 코인 교환 (실제 결제 없음)

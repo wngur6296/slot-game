@@ -1,0 +1,145 @@
+/* 테이블/카드/인스턴트 게임 셸 + 각 게임 레이아웃 (iPhone 390/375 우선) */
+body.in-table .machine,body.in-table .controls,body.in-table .logo,body.in-table .character,body.in-table .hud{visibility:hidden;pointer-events:none}
+.table{display:none;position:fixed;inset:0;z-index:44;flex-direction:column;background:#07040d;color:#fff;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.table.on{display:flex}
+.tb-hud{display:flex;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(#1a0b2ecc,#0d0718cc);border-bottom:1px solid #ffffff14;backdrop-filter:blur(8px)}
+.tb-title{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.15}.tb-title b{font-size:16px}.tb-title small{font-size:11px;opacity:.6}
+.tb-hud .pill{flex:0 1 auto;max-width:42%}
+.tb-stage{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.felt{flex:1;min-height:0;display:flex;flex-direction:column;padding:8px 10px 10px;overflow:hidden}
+.felt-bj,.felt-rl{background:radial-gradient(120% 80% at 50% 0,#145c3a,#0a2e1e 55%,#071910)}
+.felt-bc{background:radial-gradient(120% 80% at 50% 0,#1b3a7a,#0a1636 55%,#070b18)}
+.felt-vp{background:radial-gradient(120% 80% at 50% 0,#4a1460,#1a0830 55%,#0b0514)}
+.felt-cr{background:radial-gradient(120% 80% at 50% 0,#2a1060,#0d0718 60%,#07040d)}
+.felt-pk,.felt-mn{background:radial-gradient(120% 80% at 50% 0,#1c1c28,#0b0b12 60%,#07070c)}
+
+/* 카드 */
+.pcard{width:62px;height:88px;perspective:600px;display:inline-block;vertical-align:bottom;margin:0 4px}
+.pc-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s}
+.pcard.down .pc-inner,.pcard.squeeze .pc-inner{transform:rotateY(180deg)}
+.pc-face,.pc-back{position:absolute;inset:0;border-radius:8px;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 3px 8px #0006}
+.pc-face{background:linear-gradient(#fff,#f3f0ea);color:#1a1a1a;padding:5px 6px;display:flex;flex-direction:column}
+.pc-face b{font-size:16px;font-weight:900;line-height:1}.pc-face i{font-style:normal;font-size:14px;line-height:1}
+.pc-face em{font-style:normal;margin:auto 0 2px;text-align:center;font-size:26px;line-height:1}
+.pcard.red .pc-face{color:#c4122f}
+.pc-back{transform:rotateY(180deg);background:
+  linear-gradient(135deg,#2a0f4a 25%,#1a0830 25%,#1a0830 50%,#2a0f4a 50%,#2a0f4a 75%,#1a0830 75%);
+  background-size:10px 10px;border:2px solid #d4af6a}
+.pcard.deal{animation:dealIn .28s ease-out}
+@keyframes dealIn{from{transform:translate(40px,-60px) rotate(18deg) scale(.6);opacity:0}}
+
+/* 공용 컨트롤 */
+.tb-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0;scrollbar-width:none}.tb-chips::-webkit-scrollbar{display:none}
+.chipv{flex:none;border:1px solid #ffffff33;background:#0006;color:#fff;font:inherit;font-weight:800;font-size:12px;padding:7px 10px;border-radius:16px}
+.chipv.on{background:linear-gradient(#ffe27a,#f5a50b);color:#2a1500;border-color:transparent}
+.tba{border:0;border-radius:12px;padding:12px 14px;font:inherit;font-weight:900;font-size:15px;color:#2a1500;background:linear-gradient(#ffe27a,#f5a50b);box-shadow:0 3px 0 #9a5b00}
+.tba.ghost{background:#ffffff18;color:#fff;box-shadow:none}
+.tba.deal{min-width:120px}
+.tba.recoup{background:linear-gradient(#5dff9a,#16a34a);box-shadow:0 3px 0 #0b6b2c;color:#03240c}
+.tba:disabled{opacity:.4;box-shadow:none}
+.bj-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.bj-msg{text-align:center;font-weight:700;min-height:22px;font-size:14px;opacity:.9;margin:4px 0}
+.rl-bar{display:flex;flex-direction:column;gap:8px;padding-top:8px}
+.sq-tog{font-size:12px;opacity:.85;display:flex;align-items:center;gap:6px;justify-content:center}
+#crAuto{width:64px;background:#0008;border:1px solid #ffffff33;color:#fff;border-radius:8px;padding:5px 6px;font:inherit;font-weight:800}
+
+/* 블랙잭 */
+.bj-dealer,.bj-player{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:110px}
+.bj-lab{font-size:11px;letter-spacing:1px;opacity:.7}
+.bj-hand{text-align:center;padding:6px;border-radius:12px;transition:.2s}
+.bj-hand.act{background:#ffffff14;box-shadow:0 0 0 2px #ffd34d}
+.bj-hand.win{box-shadow:0 0 0 2px #5dff9a}.bj-hand.lose{opacity:.55}.bj-hand.push{box-shadow:0 0 0 2px #fff6}
+.bj-cards{display:flex;justify-content:center;align-items:flex-end;min-height:88px}
+.bj-tot{font-size:12px;font-weight:800;margin-top:4px;color:#ffd34d}
+.bj-player{flex:1;display:flex;flex-direction:row;justify-content:center;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.bj-acts{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px}
+.bj-ins{text-align:center;font-size:13px}
+.bj-end{text-align:center;font-weight:800;margin-bottom:8px;color:#ffd34d}
+
+/* 룰렛 */
+.rl-top{display:flex;align-items:center;justify-content:center;gap:10px;height:168px}
+.wheel-3d{position:relative;width:210px;height:170px;perspective:820px}
+.wheel-rot{width:200px;height:200px;position:absolute;left:0;top:-10px;transform-origin:50% 50%;filter:drop-shadow(0 10px 16px #0009)}
+.rl-svg{width:100%;height:100%;overflow:visible}
+.rl-ball{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #000a,0 0 6px #fff8;z-index:3;pointer-events:none}
+.rl-hub{display:none}
+.rl-res{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:22px;background:#111;border:3px solid #d4af6a}
+.rl-res.red{background:#c4122f;border-color:#ffd0d0}.rl-res.black{background:#111}.rl-res.green{background:#0a7a3e}
+.rl-res.pop{animation:pop .4s}
+@keyframes pop{50%{transform:scale(1.15)}}
+.rl-hist{display:flex;gap:4px;overflow:hidden;min-height:26px;align-items:center;margin:4px 0}
+.rl-hist i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:800;font-style:normal}
+.rl-hist i.red{background:#c4122f}.rl-hist i.black{background:#222;border:1px solid #fff3}.rl-hist i.green{background:#0a7a3e}
+.rl-hc{display:flex;justify-content:space-between;font-size:10px;opacity:.75;margin-bottom:4px}
+.rl-board{flex:1;min-height:0;overflow:auto}
+.rl-table{display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto auto auto;gap:3px;font-size:11px}
+.rl-0{grid-row:1/3;border:0;border-radius:8px;background:#0a7a3e;color:#fff;font-weight:900}
+.rl-grid{display:flex;flex-direction:column;gap:3px}
+.rl-row{display:grid;grid-template-columns:repeat(12,1fr) 1.15fr;gap:3px}
+.rl-n,.rl-out{position:relative;border:0;border-radius:5px;color:#fff;font:inherit;font-weight:800;min-height:28px;padding:0}
+.rl-n.red,.rl-out.red{background:#c4122f}.rl-n.black,.rl-out.black{background:#1a1a1a}.rl-n.green{background:#0a7a3e}
+.rl-n.hit,.rl-0.hit{box-shadow:0 0 0 2px #ffd34d,0 0 10px #ffd34d}
+.rl-n b,.rl-out b,.rl-0 b{position:absolute;right:1px;bottom:0;font-size:8px;background:#ffd34d;color:#2a1500;border-radius:4px;padding:0 2px}
+.rl-doz,.rl-outrow{grid-column:1/-1;display:grid;gap:3px}
+.rl-doz{grid-template-columns:repeat(3,1fr)}.rl-outrow{grid-template-columns:repeat(6,1fr)}
+.rl-out{background:#0d4a32;min-height:32px;font-size:9px}
+.hit-e,.hit-n,.hit-c,.hit-s{position:absolute;z-index:2}
+.hit-e{top:20%;right:-4px;width:8px;height:60%}
+.hit-n{left:20%;top:-4px;width:60%;height:8px}
+.hit-c{right:-5px;top:-5px;width:10px;height:10px}
+.hit-s{left:-3px;top:20%;width:6px;height:60%}
+.rl-tot{text-align:center;font-size:13px}.rl-tot b{color:#ffd34d}
+
+/* 바카라 */
+.bc-roads{display:flex;gap:8px;background:#0006;border-radius:10px;padding:6px;max-height:110px;overflow:auto}
+.rd{flex:1;min-width:0}.rd small{font-size:9px;letter-spacing:1px;opacity:.6}
+.rd-grid{display:flex;gap:2px;margin-top:3px}
+.rd-col{display:flex;flex-direction:column;gap:2px}
+.rd-col i{width:12px;height:12px;border-radius:50%;background:#ffffff14;font-style:normal;font-size:8px;display:grid;place-items:center;color:#fff}
+.rd-col i.P{background:#c4122f}.rd-col i.B{background:#2b6cff}.rd-col i.T{background:#16a34a;border-radius:2px}
+.bc-hands{display:flex;align-items:center;justify-content:space-around;gap:6px;margin:10px 0;flex:1}
+.bc-side{text-align:center}.bc-side>span{display:block;font-size:11px;letter-spacing:1px;opacity:.7;margin-bottom:4px}
+.bc-vs{font-weight:900;color:#ffd34d;font-size:14px}
+.bc-spots{display:grid;grid-template-columns:1fr 1.2fr 1fr 1.2fr 1fr;gap:5px}
+.bc-sp{border:0;border-radius:10px;padding:10px 4px;color:#fff;font:inherit;display:flex;flex-direction:column;gap:2px;min-height:56px}
+.bc-sp small{font-size:9px;opacity:.85}.bc-sp b{font-size:13px;color:#ffd34d;min-height:1em}
+.bc-sp.P{background:#7a1020}.bc-sp.B{background:#102a7a}.bc-sp.T{background:#0d4a32}.bc-sp.PP,.bc-sp.BP{background:#2a1a40}
+
+/* 비디오 포커 */
+.vp-pay{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:11px;margin-bottom:8px}
+.vp-row{display:grid;grid-template-columns:1fr auto auto;gap:6px;padding:2px 4px;border-radius:4px}
+.vp-row.hit{background:#ffd34d;color:#2a1500;font-weight:900}
+.vp-row b{opacity:.7}.vp-row em{font-style:normal;color:#ffd34d}.vp-row.hit em{color:#2a1500}
+.vp-cards{display:flex;justify-content:center;gap:4px;flex:1;align-items:center}
+.vp-c{background:none;border:0;padding:0;color:inherit;position:relative}
+.vp-c .pcard{width:58px;height:84px}
+.vp-c.held .pcard{transform:translateY(-10px);filter:drop-shadow(0 0 8px #ffd34d)}
+.vp-h{display:block;font-size:10px;font-weight:900;text-align:center;height:16px;color:#ffd34d}
+@media (max-width:380px){.pcard,.vp-c .pcard{width:54px;height:78px}.rl-out{font-size:8px}}
+
+/* 크래시 */
+.cr-hist{display:flex;gap:4px;overflow:hidden;margin-bottom:6px}
+.cr-hist i{font-style:normal;font-size:10px;font-weight:800;padding:2px 6px;border-radius:8px;background:#ffffff14}
+.cr-hist i.lo{color:#ff8a8a}.cr-hist i.mid{color:#ffd34d}.cr-hist i.hi{color:#5dff9a}
+.cr-graph{position:relative;flex:1;min-height:180px;border-radius:12px;overflow:hidden;background:#0b0618;border:1px solid #ffffff14}
+.cr-graph canvas{width:100%;height:100%;display:block}
+.cr-mult{position:absolute;inset:0;display:grid;place-items:center;font-size:42px;font-weight:900;text-shadow:0 0 18px #ffd34d88;pointer-events:none}
+.cr-mult.boom{color:#ff3b5c;text-shadow:0 0 18px #ff3b5c}
+.cr-feed{height:88px;overflow:auto;font-size:11px;margin:6px 0;display:flex;flex-direction:column;gap:2px}
+.cr-feed .ok{color:#5dff9a}.cr-feed .bad{color:#ff8a8a;opacity:.7}
+
+/* 플린코 */
+.pk-opts{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+.pk-board{flex:1;min-height:200px}.pk-board canvas{width:100%;height:100%;display:block;border-radius:12px}
+.pk-bins{display:flex;gap:2px;margin:4px auto 0;width:92%;box-sizing:border-box}
+.pk-bins i{flex:1 1 0;min-width:0;text-align:center;font-style:normal;font-size:7px;font-weight:800;background:#ffffff14;border-radius:4px;padding:5px 0;overflow:hidden}
+.pk-bins i.hit{background:#ffd34d;color:#2a1500}
+.pk-bins i.lo{opacity:.55}.pk-bins i.hi{color:#ffd34d}
+
+/* 마인즈 */
+.mn-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}.mn-top b{color:#ffd34d;font-size:18px}
+.mn-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:min(340px,100%);margin:0 auto;flex:0 0 auto}
+.mn-c{border:1px solid #d4af6a55;border-radius:10px;background:linear-gradient(#2a2a33,#16161c);color:#fff;font-size:22px;aspect-ratio:1;width:100%;height:auto;box-shadow:inset 0 1px 0 #fff2}
+.mn-c.gem{background:linear-gradient(#1b4a3a,#0d2a22);border-color:#5dff9a}
+.mn-c.boom{background:linear-gradient(#5a1020,#2a0008);border-color:#ff3b5c}
+.mn-c.safe{opacity:.45}

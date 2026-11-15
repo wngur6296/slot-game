@@ -1,6 +1,6 @@
 /* 오디오: Web Audio API. iOS는 첫 탭에서 unlock() 필요. 파일은 assets/sfx, assets/bgm */
 const Audio2 = (() => {
-  const SFX = ['click', 'spin', 'stop', 'coin', 'win_small', 'win_big', 'jackpot', 'freespins', 'tension', 'levelup', 'fruit_pop', 'gong', 'vault', 'bunny_heart', 'expand'];
+  const SFX = ['click', 'spin', 'stop', 'coin', 'win_small', 'win_big', 'jackpot', 'freespins', 'tension', 'levelup', 'fruit_pop', 'gong', 'vault', 'bunny_heart', 'expand', 'card_deal', 'card_flip', 'chip', 'wheel', 'ball', 'squeeze', 'hold', 'crash_tick', 'crash_boom', 'recoup', 'plinko_peg', 'plinko_land', 'mine_gem', 'mine_boom'];
   let map = {}, bgmName = 'casino_loop';
   let ctx, master, sfxGain, bgmGain, bgmSrc; const buf = {}; let sfxOn = true, bgmOn = true; const active = {};
   async function load(name, url) {

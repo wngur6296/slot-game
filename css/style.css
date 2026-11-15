@@ -278,7 +278,7 @@ body.freespin .fs-banner{transform:translateX(-50%) scale(1)}
 .live{background:#ff2d55;color:#fff;font-weight:900;font-size:10px;padding:2px 6px;border-radius:6px;animation:pulse 1.2s infinite}
 .tk-win{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tk-in{display:inline-block;animation:tkIn .4s}.tk-win em{font-style:normal;color:#ffd34d;font-weight:900}.tk-win small{color:#5dff9a;margin-left:4px}
 @keyframes tkIn{from{transform:translateY(100%);opacity:0}}@keyframes pulse{50%{opacity:.55}}
-.cats{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none}.cats::-webkit-scrollbar{display:none}
+.cats{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none;padding-right:16px}.cats::-webkit-scrollbar{display:none}
 .cats button{flex:none;border:1px solid #ffffff22;background:#ffffff0d;color:#fffc;font:inherit;font-size:13px;font-weight:700;padding:7px 15px;border-radius:18px}
 .cats button.on{background:linear-gradient(#ffd34d,#f59e0b);color:#2a1500;border-color:transparent;box-shadow:0 0 12px #ffd34d55}
 .games{display:flex;flex-direction:column;gap:12px}
