@@ -16,7 +16,7 @@
     id: 'vpoker', name: '비디오 포커', level: 1, minBetIdx: 0, order: 23,
     cats: ['card', 'instant'], kind: 'instant',
     theme: { bgm: 'table_loop', cover: 'g_vpoker', vars: { f1: '#e056c2', f2: '#1a0830' } },
-    lobby: { rtp: 99.54, volatility: 3, tag: '카드',
+    lobby: { blurb: '잭스 오어 베터 9/6 · 추천 홀드', rtp: 99.54, volatility: 3, tag: '카드',
       pros: ['9/6 잭스 오어 베터 최적 전략 RTP 99.54%', '어떤 카드를 홀드할지 직접 선택', '로열 플러시 x800'],
       cons: ['최적 전략을 벗어나면 환수율이 떨어짐', '로열은 매우 희귀'],
       features: ['홀드/드로우', '9/6 페이테이블'] }
@@ -37,54 +37,187 @@
   function rankHand(cards) { const h = analyze(cards); return PAY.find((p) => p.test(h)) || null; }
   function payout(cards, bet) { const r = rankHand(cards); return r ? bet * r.odd : 0; }
 
-  // 약식 9/6 전략 (우선순위). 시뮬 RTP는 최적(99.54%)에 근접
+  // 9/6 Jacks or Better 최적 홀드 (Wizard of Odds 36줄 차트, 이론 RTP 99.543%)
+  const rnk = (c) => c.r === 1 ? 14 : c.r;
+  const holdI = (idx) => { const h = Array(5).fill(false); idx.forEach((i) => { if (i >= 0) h[i] = true; }); return h; };
+  function idxWhere(cards, pred) { return cards.map((c, i) => pred(c, i) ? i : -1).filter((i) => i >= 0); }
+  function isOS(rs) { // 4 unique ranks, open-ended straight (no ace)
+    const u = [...new Set(rs)].sort((a, b) => a - b);
+    return u.length === 4 && u[3] - u[0] === 3 && u[0] >= 2 && u[3] <= 13; // 2-3-4-5 .. T-J-Q-K (A-high is inside)
+  }
+  function isInside4(rs) {
+    const u = [...new Set(rs)].sort((a, b) => a - b);
+    if (u.length !== 4) return false;
+    if (u[0] === 2 && u.includes(14) && u[2] <= 5) return true; // wheel A234/A235/A245/A345
+    if (u.includes(14) && u[0] >= 10 && u.filter((x)=>x>=11||x===10).length>=3 && u[3]- (u[0]===10?10:u.filter(x=>x<14)[0]||u[0]) <= 4) {
+      // broadway inside: AJQK, ATJQ, ATJK, ATQK, etc.
+      const b = u.map((x)=>x===14?1:x).sort((a,b)=>a-b);
+      // handle as AKQJ = 11,12,13,14 spread 3 but ace high = inside (only 10)
+      if (u[0] >= 11 && u[3] === 14 && u[3] - u[0] === 3) return true; // JQKA
+    }
+    // one gap in 4 cards: spread 4 with 4 unique (e.g. 7,8,9,J)
+    return u[3] - u[0] === 4;
+  }
+  function highsIn(cards) { return cards.filter((c) => rnk(c) >= 11).length; }
+  function sf3Type(cs) { // 3 suited, unique ranks; type 1/2/3 or 0
+    if (cs.length !== 3) return 0;
+    const rs = cs.map(rnk).sort((a, b) => a - b);
+    if (new Set(rs).size < 3) return 0;
+    let use = rs.slice(), highs = cs.filter((c) => rnk(c) >= 11).length;
+    if (rs[2] === 14 && rs[0] <= 5) { use = [1, rs[0], rs[1]]; highs = 0; } // 휠: A는 하이로 안 침
+    const spread = use[2] - use[0];
+    if (spread > 4) return 0;
+    const gaps = spread - 2;
+    const score = highs - gaps;
+    if (score >= 0) return 1;
+    if (score === -1) return 2;
+    if (score === -2) return 3;
+    return 0;
+  }
   function autoHold(cards) {
-    const rnk = (c) => ranks(c), hold = (idx) => { const h = Array(5).fill(false); idx.forEach((i) => h[i] = true); return h; };
-    const all = hold([0,1,2,3,4]);
-    const H = analyze(cards);
+    const all = holdI([0, 1, 2, 3, 4]), H = analyze(cards);
+    const bySuit = {}; Cards.SUITS.forEach((s) => { bySuit[s] = idxWhere(cards, (c) => c.s === s); });
+    const suited = (n) => Cards.SUITS.map((s) => bySuit[s]).find((ix) => ix.length === n) || null;
+    const royalIx = (s) => idxWhere(cards, (c) => c.s === s && rnk(c) >= 10);
+    // 1-3 이미 만들어진 로열/SF/포카드
+    if (H.flush && H.straight && H.high === 14 && (H.low === 10 || H.rs.includes(10))) return all;
     if (H.flush && H.straight) return all;
-    if (H.counts[0] === 4) return hold(cards.map((c, i) => H.groups[0].r === rnk(c) ? i : -1).filter((i)=>i>=0));
+    if (H.counts[0] === 4) return holdI(idxWhere(cards, (c) => rnk(c) === H.groups[0].r));
+    // 4. 로열 드로우 4장
+    for (const s of Cards.SUITS) { const ix = royalIx(s); if (ix.length === 4) return holdI(ix); }
+    // 5-8 풀하우스, 플러시, 트리플, 스트레이트
     if (H.counts[0] === 3 && H.counts[1] === 2) return all;
-    // 4 to royal
-    const royal = (c) => 's' + (rnk(c) >= 10 ? rnk(c) : 0);
-    for (const s of Cards.SUITS) {
-      const idx = cards.map((c,i)=>c.s===s && rnk(c)>=10?i:-1).filter((i)=>i>=0);
-      if (idx.length === 4) return hold(idx);
-    }
     if (H.flush) return all;
-    if (H.counts[0] === 3) return hold(cards.map((c,i)=>H.groups[0].r===rnk(c)?i:-1).filter((i)=>i>=0));
+    if (H.counts[0] === 3) return holdI(idxWhere(cards, (c) => rnk(c) === H.groups[0].r));
     if (H.straight) return all;
-    // 4 to straight flush
-    // 2 pair
-    if (H.counts[0] === 2 && H.counts[1] === 2) return hold(cards.map((c,i)=>[H.groups[0].r,H.groups[1].r].includes(rnk(c))?i:-1).filter((i)=>i>=0));
-    // high pair
-    if (H.counts[0] === 2 && H.pairHigh >= 11) return hold(cards.map((c,i)=>rnk(c)===H.pairHigh?i:-1).filter((i)=>i>=0));
-    // 3 to royal
+    // 9. 스트레이트 플러시 드로우 4장
     for (const s of Cards.SUITS) {
-      const idx = cards.map((c,i)=>c.s===s && rnk(c)>=10?i:-1).filter((i)=>i>=0);
-      if (idx.length === 3) return hold(idx);
+      const ix = bySuit[s];
+      if (ix.length === 4) {
+        const rs = ix.map((i) => rnk(cards[i]));
+        if (isOS(rs) || isInside4(rs) || (new Set(rs).size === 4 && Math.max(...rs) - Math.min(...rs.map((x)=>x===14&&Math.min(...rs)<=5?1:x)) <= 4)) return holdI(ix);
+      }
     }
-    // 4 to flush
+    // 10-11 투페어, 하이페어
+    if (H.counts[0] === 2 && H.counts[1] === 2) return holdI(idxWhere(cards, (c) => rnk(c) === H.groups[0].r || rnk(c) === H.groups[1].r));
+    if (H.counts[0] === 2 && H.pairHigh >= 11) return holdI(idxWhere(cards, (c) => rnk(c) === H.pairHigh));
+    // 12. 로열 드로우 3장
+    for (const s of Cards.SUITS) { const ix = royalIx(s); if (ix.length === 3) return holdI(ix); }
+    // 13. 플러시 드로우 4장
+    for (const s of Cards.SUITS) { if (bySuit[s].length === 4) return holdI(bySuit[s]); }
+    // 14. 무늬 다른 T-J-Q-K
+    const tjqk = [10, 11, 12, 13].every((r) => cards.some((c) => rnk(c) === r));
+    if (tjqk) return holdI(idxWhere(cards, (c) => rnk(c) >= 10 && rnk(c) <= 13));
+    // 15. 로우 페어
+    if (H.counts[0] === 2) return holdI(idxWhere(cards, (c) => rnk(c) === H.groups[0].r));
+    // 16. 아웃사이드 스트레이트 4장 (하이카드 0-2, 에이스 없음)
+    const allRs = cards.map(rnk);
+    if (isOS(allRs) && highsIn(cards) <= 2) return all;
+    // 4장 부분집합 (5장 중 1장 버리고 OS)
+    for (let drop = 0; drop < 5; drop++) {
+      const ix = [0, 1, 2, 3, 4].filter((i) => i !== drop), rs = ix.map((i) => rnk(cards[i]));
+      if (isOS(rs) && highsIn(ix.map((i) => cards[i])) <= 2) return holdI(ix);
+    }
+    // 17. 3 to SF type 1
+    const sf3 = (t) => {
+      for (const s of Cards.SUITS) {
+        const ix = bySuit[s];
+        if (ix.length >= 3) {
+          // 3장 조합
+          for (let a = 0; a < ix.length; a++) for (let b = a + 1; b < ix.length; b++) for (let c = b + 1; c < ix.length; c++) {
+            const sub = [ix[a], ix[b], ix[c]];
+            if (sf3Type(sub.map((i) => cards[i])) === t) return holdI(sub);
+          }
+        }
+      }
+      return null;
+    };
+    const t1 = sf3(1); if (t1) return t1;
+    // 18. 같은 무늬 QJ
     for (const s of Cards.SUITS) {
-      const idx = cards.map((c,i)=>c.s===s?i:-1).filter((i)=>i>=0);
-      if (idx.length === 4) return hold(idx);
+      const q = cards.findIndex((c) => c.s === s && rnk(c) === 12);
+      const j = cards.findIndex((c) => c.s === s && rnk(c) === 11);
+      if (q >= 0 && j >= 0) return holdI([q, j]);
     }
-    // low pair
-    if (H.counts[0] === 2) return hold(cards.map((c,i)=>rnk(c)===H.groups[0].r?i:-1).filter((i)=>i>=0));
-    // 4 to outside straight (no gaps, not wheel-ish inside)
-    if (H.rs[4] - H.rs[0] === 3 && new Set(H.rs).size === 4 && H.rs[0] !== 14) {
-      /* skip, hard */ 
-    }
-    // two suited high
+    // 19. 인사이드 스트레이트 4장, 하이 4장 (JQKA)
+    const pickInside = (needH) => {
+      const trySet = (ix) => {
+        if (ix.length !== 4) return null;
+        const rs = ix.map((i) => rnk(cards[i]));
+        if (isInside4(rs) && !isOS(rs) && highsIn(ix.map((i) => cards[i])) === needH) return holdI(ix);
+        return null;
+      };
+      let r = trySet([0, 1, 2, 3, 4].filter(() => true).slice(0, 5));
+      if (cards.length === 5) {
+        const allTry = trySet([0, 1, 2, 3, 4]); if (false) {}
+        for (let d = 0; d < 5; d++) { const h = trySet([0, 1, 2, 3, 4].filter((i) => i !== d)); if (h) return h; }
+      }
+      return null;
+    };
+    const i4 = pickInside(4); if (i4) return i4;
+    // 20. 같은 무늬 KQ / KJ
     for (const s of Cards.SUITS) {
-      const idx = cards.map((c,i)=>c.s===s && rnk(c)>=11?i:-1).filter((i)=>i>=0);
-      if (idx.length >= 2) return hold(idx.slice(0, 2));
+      const k = cards.findIndex((c) => c.s === s && rnk(c) === 13);
+      const q = cards.findIndex((c) => c.s === s && rnk(c) === 12);
+      const j = cards.findIndex((c) => c.s === s && rnk(c) === 11);
+      if (k >= 0 && q >= 0) return holdI([k, q]);
+      if (k >= 0 && j >= 0) return holdI([k, j]);
     }
-    // unsuited high cards (keep 2 highest J-A)
-    const highs = cards.map((c,i)=>({i,r:rnk(c)})).filter((x)=>x.r>=11).sort((a,b)=>b.r-a.r);
-    if (highs.length >= 2) return hold(highs.slice(0,2).map((x)=>x.i));
-    if (highs.length === 1) return hold([highs[0].i]);
-    return hold([]);
+    // 21. 같은 무늬 A+ J/Q/K
+    for (const s of Cards.SUITS) {
+      const a = cards.findIndex((c) => c.s === s && rnk(c) === 14);
+      if (a < 0) continue;
+      for (const r of [13, 12, 11]) { const i = cards.findIndex((c) => c.s === s && rnk(c) === r); if (i >= 0) return holdI([a, i]); }
+    }
+    // 22. 인사이드 스트레이트 4장, 하이 3장
+    const i3 = pickInside(3); if (i3) return i3;
+    // 23. 3 to SF type 2
+    const t2 = sf3(2); if (t2) return t2;
+    // 24. 무늬 다른 JQK
+    const jqk = [11, 12, 13].map((r) => cards.findIndex((c) => rnk(c) === r));
+    if (jqk.every((i) => i >= 0)) return holdI(jqk);
+    // 25. 무늬 다른 JQ
+    const ju = cards.findIndex((c) => rnk(c) === 11), qu = cards.findIndex((c) => rnk(c) === 12);
+    if (ju >= 0 && qu >= 0) return holdI([ju, qu]);
+    // 26. 같은 무늬 TJ
+    for (const s of Cards.SUITS) {
+      const t = cards.findIndex((c) => c.s === s && rnk(c) === 10);
+      const j = cards.findIndex((c) => c.s === s && rnk(c) === 11);
+      if (t >= 0 && j >= 0) return holdI([t, j]);
+    }
+    // 27. 무늬 다른 하이 2장 (킹이 최고: KQ 이미, KJ, 그리고 K만 있는 페어 아닌 KA는 29)
+    const kh = cards.findIndex((c) => rnk(c) === 13);
+    if (kh >= 0) {
+      const q2 = cards.findIndex((c) => rnk(c) === 12);
+      const j2 = cards.findIndex((c) => rnk(c) === 11);
+      if (q2 >= 0) return holdI([kh, q2]);
+      if (j2 >= 0) return holdI([kh, j2]);
+    }
+    // 28. 같은 무늬 TQ
+    for (const s of Cards.SUITS) {
+      const t = cards.findIndex((c) => c.s === s && rnk(c) === 10);
+      const q = cards.findIndex((c) => c.s === s && rnk(c) === 12);
+      if (t >= 0 && q >= 0) return holdI([t, q]);
+    }
+    // 29. 무늬 다른 하이 2장 (에이스가 최고: AJ, AQ, AK)
+    const ah = cards.findIndex((c) => rnk(c) === 14);
+    if (ah >= 0) {
+      for (const r of [13, 12, 11]) { const i = cards.findIndex((c) => rnk(c) === r); if (i >= 0) return holdI([ah, i]); }
+    }
+    // 30. J 하나
+    const jOnly = cards.findIndex((c) => rnk(c) === 11); if (jOnly >= 0) return holdI([jOnly]);
+    // 31. 같은 무늬 TK
+    for (const s of Cards.SUITS) {
+      const t = cards.findIndex((c) => c.s === s && rnk(c) === 10);
+      const k = cards.findIndex((c) => c.s === s && rnk(c) === 13);
+      if (t >= 0 && k >= 0) return holdI([t, k]);
+    }
+    // 32-34 Q, K, A 하나
+    for (const r of [12, 13, 14]) { const i = cards.findIndex((c) => rnk(c) === r); if (i >= 0) return holdI([i]); }
+    // 35. 3 to SF type 3
+    const t3 = sf3(3); if (t3) return t3;
+    // 36. 전부 버림
+    return holdI([]);
   }
   function drawFrom(hand, held, deck, rng) {
     const d = deck.slice(); Cards.shuffle(d, rng);

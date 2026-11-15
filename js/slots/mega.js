@@ -3,7 +3,7 @@
   const SLOT = {
     id: 'mega', name: '메가 잭팟 볼트', level: 8, minBetIdx: 3, order: 4,
     theme: { bg: 'bg_mega', logo: ['MEGA', 'VAULT'], bgm: 'mega_loop', sfx: { jackpot: 'vault' }, vars: { f1: '#7ad8ff', f2: '#0a1a3a', f3: '#ffd34d', f4: '#10204a' }, cover: 'm_jp' },
-    lobby: { rtp: 97.0, volatility: 4, tag: '누적 잭팟', pros: ['누적 잭팟이 계속 커짐', 'JACKPOT 3개 = 잭팟 통째로!'], cons: ['최소 베팅 100', '일반 당첨률 낮음'], features: ['누적 잭팟', '프리스핀 x2'] },
+    lobby: { blurb: '계속 커지는 누적 잭팟 슬롯', rtp: 97.0, volatility: 4, tag: '누적 잭팟', pros: ['누적 잭팟이 계속 커짐', 'JACKPOT 3개 = 잭팟 통째로!'], cons: ['최소 베팅 100', '일반 당첨률 낮음'], features: ['누적 잭팟', '프리스핀 x2'] },
     symbols: {
       bell:    { name: '벨',      img: 'bell',    tier: 'low'  },
       bar:     { name: 'BAR',     img: 'bar',     tier: 'low'  },

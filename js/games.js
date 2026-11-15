@@ -32,7 +32,15 @@ const Tables = (() => {
     }
     E().tx('game', label, net);
     hud();
-    if (net > 0) { Audio2.play(returned >= stake * 10 ? 'win_big' : 'win_small'); Haptic([8, 30, 12]); }
+    if (net > 0) {
+      Audio2.play(returned >= stake * 10 ? 'win_big' : 'win_small'); Haptic([8, 30, 12]);
+      const cx = innerWidth / 2, cy = innerHeight * 0.38;
+      if (window.FX) {
+        if (ratio >= 30) { FX.confetti(160); FX.coinRain(48); FX.fireworks(5); }
+        else if (ratio >= 10) { FX.confetti(110); FX.coinBurst(cx, cy, 28); }
+        else { FX.coinBurst(cx, cy, 20); FX.sparkle(cx, cy, 18); }
+      }
+    }
     else if (net < 0) Audio2.play('stop');
     return net;
   }
@@ -56,6 +64,7 @@ const Tables = (() => {
     Audio2.setTheme({ bgm: (d.theme && d.theme.bgm) || 'table_loop' });
     hud();
     mod.mount($('tbStage'), { E: E(), fmt, wager, settle, hud, toast, help, setBusy, isBusy: () => busy, levels: levels(), minBet: levels()[d.minBetIdx || 0], def: d });
+    setTimeout(() => { if (window.Guides) Guides.maybeTip(id); }, 450);
   }
   function leave() {
     if (busy) return toast('라운드가 끝난 뒤 로비로 갈 수 있어요');
@@ -63,7 +72,7 @@ const Tables = (() => {
     cur = null; $('tbStage').innerHTML = ''; $('table').classList.remove('on'); document.body.classList.remove('in-table');
     Lobby.show();
   }
-  function showHelp() { if (cur && cur.help) cur.help(); }
+  function showHelp() { if (window.Guides) Guides.open($('table').dataset.game); else if (cur && cur.help) cur.help(); }
 
   function bind() {
     const t = $('table'); if (!t || t._bound) return; t._bound = true;

@@ -5,3 +5,6 @@ __pycache__/
 *.pyc
 __pycache__/
 *.pyc
+
+docs-screens/
+assets/src/

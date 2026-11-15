@@ -8,7 +8,7 @@ const Economy = (() => {
   // v3: 멀티 슬롯 · VIP · 미션 · 거래내역 · 누적잭팟
   function v3Fields() { return { lastSlot: 'classic', pools: {}, vipPts: 0, tx: [], missions: { day: '', prog: {}, claimed: [] }, slotsPlayed: {}, lastCharge: 0 }; }
   // v4: 테이블/카드/인스턴트 게임 (룰렛 히스토리, 바카라 로드, 플레이 기록)
-  function v4Fields() { return { lastGame: 'classic', tablesPlayed: {}, rouletteHist: [], baccaratBead: [], baccaratBig: [], crashHist: [] }; }
+  function v4Fields() { return { lastGame: 'classic', tablesPlayed: {}, rouletteHist: [], baccaratBead: [], baccaratBig: [], crashHist: [], seenHints: {} }; }
   // v2: 상점 (보유/장착/버프)
   function shopFields() { const D = (typeof SHOP_CONFIG !== 'undefined' ? SHOP_CONFIG.defaults : {});
     return { owned: Object.values(D), equipped: { ...D }, buffs: {}, autopassUntil: 0 }; }
@@ -21,7 +21,7 @@ const Economy = (() => {
     const f = fresh(); const out = Object.assign(f, d);
     out.settings = Object.assign(fresh().settings, d.settings); out.stats = Object.assign(fresh().stats, d.stats);
     out.equipped = Object.assign(shopFields().equipped, d.equipped); out.owned = [...new Set([...shopFields().owned, ...(d.owned || [])])];
-    out.buffs = d.buffs || {}; out.missions = Object.assign(v3Fields().missions, d.missions); return out;
+    out.buffs = d.buffs || {}; out.missions = Object.assign(v3Fields().missions, d.missions); out.seenHints = Object.assign({}, v4Fields().seenHints, d.seenHints || {}); return out;
   }
   let s = load();
   function load() { try { const d = migrate(JSON.parse(localStorage.getItem(C.saveKey))); if (d) return d; } catch (e) {} return fresh(); }

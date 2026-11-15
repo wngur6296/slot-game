@@ -3,7 +3,7 @@
   const SLOT = {
     id: 'fruit', name: '트로피컬 프루츠', level: 1, minBetIdx: 0, order: 2,
     theme: { bg: 'bg_fruit', logo: ['FRUIT', 'PARTY'], bgm: 'fruit_loop', sfx: { win_small: 'fruit_pop' }, vars: { f1: '#ff9a1a', f2: '#4a1a00', f3: '#7dff7a', f4: '#1a5a3a' }, cover: 'f_melon' },
-    lobby: { rtp: 96.4, volatility: 1, tag: '저변동성', pros: ['당첨이 매우 자주 나옴', '체리·레몬·오렌지 섞어서 3개 = 믹스 당첨', '코인이 천천히 오래감'], cons: ['한 방 당첨이 작음', '잭팟 없음'], features: ['과일 믹스', '프리스핀 x2'] },
+    lobby: { blurb: '당첨이 자주 나오는 상큼한 과일 슬롯', rtp: 96.4, volatility: 1, tag: '저변동성', pros: ['당첨이 매우 자주 나옴', '체리·레몬·오렌지 섞어서 3개 = 믹스 당첨', '코인이 천천히 오래감'], cons: ['한 방 당첨이 작음', '잭팟 없음'], features: ['과일 믹스', '프리스핀 x2'] },
     symbols: {
       cherry:  { name: '체리',     img: 'cherry',  tier: 'low', fruit: true },
       lemon:   { name: '레몬',     img: 'lemon',   tier: 'low', fruit: true },

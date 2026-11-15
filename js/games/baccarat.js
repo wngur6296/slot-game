@@ -5,7 +5,7 @@
     id: 'baccarat', name: '바카라', level: 4, minBetIdx: 0, order: 22,
     cats: ['table', 'card', 'live'], kind: 'table',
     theme: { bgm: 'table_loop', cover: 'g_baccarat', vars: { f1: '#d4af6a', f2: '#0a1a40' } },
-    lobby: { rtp: 98.94, volatility: 2, tag: '테이블',
+    lobby: { blurb: '뱅커/플레이어 · 출목표와 카드 쪼기', rtp: 98.94, volatility: 2, tag: '테이블',
       pros: ['뱅커 베팅 엣지 약 1.06% (커미션 5%)', '플레이어도 1.24%로 낮음', '로드로 최근 흐름 확인'],
       cons: ['타이(8:1)와 페어(11:1)는 엣지가 높음', '레벨 4 해금'],
       features: ['표준 세 번째 카드', '스퀴즈', '페어', '로드'] }

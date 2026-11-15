@@ -3,7 +3,7 @@
   const SLOT = {
     id: 'classic', name: '럭키 7 클래식', level: 1, minBetIdx: 0, order: 1,
     theme: { bg: 'bg', logo: ['LUCKY', '7'], bgm: 'casino_loop', sfx: {}, vars: { f1: '#e6a019', f2: '#4a1b00', f3: '#ffd34d', f4: '#5a1a6e' }, cover: 'seven' },
-    lobby: { rtp: 96.1, volatility: 3, tag: '밸런스', pros: ['체리 2개만 맞아도 당첨', '와일드 3개 = 잭팟'], cons: ['특수 기능이 단순'], features: ['프리스핀 x2', '연승 배수', '니어미스'] },
+    lobby: { blurb: '클래식 3릴 슬롯 · 와일드와 프리스핀', rtp: 96.1, volatility: 3, tag: '밸런스', pros: ['체리 2개만 맞아도 당첨', '와일드 3개 = 잭팟'], cons: ['특수 기능이 단순'], features: ['프리스핀 x2', '연승 배수', '니어미스'] },
     symbols: {
       cherry:  { name: '체리',   img: 'cherry',  tier: 'low'  },
       lemon:   { name: '레몬',   img: 'lemon',   tier: 'low'  },

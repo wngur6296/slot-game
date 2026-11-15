@@ -5,7 +5,7 @@
     id: 'blackjack', name: '블랙잭', level: 1, minBetIdx: 0, order: 20,
     cats: ['table', 'card'], kind: 'table',
     theme: { bgm: 'table_loop', cover: 'g_blackjack', vars: { f1: '#d4af6a', f2: '#0b3d2c' } },
-    lobby: { rtp: 99.54, volatility: 2, tag: '테이블',
+    lobby: { blurb: '6덱 · 블랙잭 3:2 · 스플릿·더블', rtp: 99.54, volatility: 2, tag: '테이블',
       pros: ['기본 전략 시 하우스 엣지 약 0.46%', '블랙잭은 3:2 배당', '스플릿·더블 가능'],
       cons: ['실력에 따라 환수율이 달라짐', '보험의 엣지가 높음'],
       features: ['6덱 슈', 'S17', '3:2', '스플릿/더블'] }

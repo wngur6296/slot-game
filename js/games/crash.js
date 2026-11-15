@@ -5,7 +5,7 @@
     id: 'crash', name: '크래시', level: 6, minBetIdx: 0, order: 24,
     cats: ['live', 'instant'], kind: 'live',
     theme: { bgm: 'table_loop', cover: 'g_crash', vars: { f1: '#ffd34d', f2: '#1a0540' } },
-    lobby: { rtp: 96.00, volatility: 5, tag: '라이브',
+    lobby: { blurb: '배가 오를 때 직접 회수하는 그래프', rtp: 96.00, volatility: 5, tag: '라이브',
       pros: ['회수 시점을 직접 고름', '자동 회수 지원', '한 판이 짧고 템포가 빠름'],
       cons: ['변동성이 매우 큼', '시작하자마자 1.00에 터지기도 함', '레벨 6 해금'],
       features: ['실시간 그래프', '회수', '자동 회수'] }

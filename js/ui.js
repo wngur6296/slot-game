@@ -78,6 +78,7 @@
     $('logoB').classList.toggle('long', d.theme.logo[1].length > 2);
     $('character').classList.toggle('on', !!d.theme.character); if (d.theme.character) { pose('idle'); setTimeout(() => say('idle'), 800); }
     Shop.applyCosmetics(); Audio2.setTheme(d.theme); showPool(); setWin('행운을 빌어요!', 0); E.save(); hud(); bulbs();
+    setTimeout(() => { if (window.Guides) Guides.maybeTip(id); }, 450);
   }
 
   // ----- 스핀 -----
@@ -206,7 +207,7 @@
   tap('btnAuto', () => { auto = !auto; autoCount = 0; $('btnAuto').classList.toggle('on', auto); Audio2.play('click'); hud(); if (auto) spin(); });
   tap('btnTurbo', () => { E.s.settings.turbo = !E.s.settings.turbo; $('btnTurbo').classList.toggle('on', E.s.settings.turbo); E.save(); Audio2.play('click'); });
   tap('btnHourly', () => charge($('btnHourly')));
-  tap('btnDaily', daily); tap('coinPill', () => toast(`🪙 보유 잔액 ${fmt(E.s.coins)}`)); tap('btnHome', () => { if (spinning || E.s.freeSpins > 0) return toast('스핀이 끝난 뒤 로비로 갈 수 있어요'); auto = false; $('btnAuto').classList.remove('on'); Lobby.show(); }); tap('btnInfo', paytable); tap('btnShop', () => Shop.open('ex')); tap('btnStore', () => Shop.open()); tap('btnMenu', menu); tap('btnLevel', levelInfo);
+  tap('btnDaily', daily); tap('coinPill', () => toast(`🪙 보유 잔액 ${fmt(E.s.coins)}`)); tap('btnHome', () => { if (spinning || E.s.freeSpins > 0) return toast('스핀이 끝난 뒤 로비로 갈 수 있어요'); auto = false; $('btnAuto').classList.remove('on'); Lobby.show(); }); tap('btnInfo', () => (window.Guides ? Guides.open(document.body.dataset.slot) : paytable())); tap('btnShop', () => Shop.open('ex')); tap('btnStore', () => Shop.open()); tap('btnMenu', menu); tap('btnLevel', levelInfo);
   addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); $('btnSpin').click(); } });
   $('btnTurbo').classList.toggle('on', E.s.settings.turbo);
 

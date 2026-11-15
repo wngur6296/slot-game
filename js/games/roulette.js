@@ -7,7 +7,7 @@
     id: 'roulette', name: '유럽 룰렛', level: 2, minBetIdx: 0, order: 21,
     cats: ['table', 'live'], kind: 'table',
     theme: { bgm: 'table_loop', cover: 'g_roulette', vars: { f1: '#d4af6a', f2: '#0b3d1e' } },
-    lobby: { rtp: 97.30, volatility: 3, tag: '테이블',
+    lobby: { blurb: '유럽식 37포켓 · 인·아웃사이드 베팅', rtp: 97.30, volatility: 3, tag: '테이블',
       pros: ['모든 표준 베팅 하우스 엣지 동일 2.70%', '다양한 인·아웃사이드 베팅', '최근 번호·핫/콜드'],
       cons: ['0 때문에 짝/홀·레드/블랙도 2.70% 엣지', '한 판에 여러 칩을 올려야 함'],
       features: ['유럽식 37포켓', '인사이드/아웃사이드', '리벳'] }
@@ -50,7 +50,7 @@
   function mount(root, a) {
     api = a; el = root;
     const hist = (a.E.s.rouletteHist || []).slice();
-    st = { phase: 'bet', chip: a.minBet, bets: {}, last: hist, spin: null, ang: 0, ball: 0, msg: '칩을 고르고 테이블에 올려 주세요' };
+    st = { phase: 'bet', chip: a.minBet, bets: {}, last: hist, spin: null, ang: 0, ball: 180, ballR: 86, msg: '칩을 고르고 테이블에 올려 주세요' };
     render();
   }
   function unmount() { tmr.forEach(clearTimeout); tmr=[]; cancelAnimationFrame(raf); el=null; api&&api.setBusy(false); }
@@ -140,8 +140,8 @@
     const L = api.levels.filter((n)=>n>=api.minBet).slice(0,7);
     el.innerHTML = `<div class="felt felt-rl">
       <div class="rl-top">
-        <div class="wheel-3d"><div class="wheel-rot" id="rlWheel" style="transform:rotateX(55deg) rotateZ(${st.ang}deg)">${wheelSVG()}</div>
-          <div class="rl-ball" id="rlBall"></div><div class="rl-hub"></div></div>
+        <div class="wheel-3d"><div class="wheel-rot" id="rlWheel" style="transform:rotateX(55deg) rotateZ(${st.ang}deg)">${wheelSVG()}<div class="rl-ball" id="rlBall"></div></div>
+          <div class="rl-pointer" aria-hidden="true"></div></div>
         <div class="rl-res" id="rlRes">${st.spin==null?'—':st.spin}</div>
       </div>
       ${histBar()}${hotcold()}
@@ -177,10 +177,10 @@
   }
   function placeBall(radius, ang) {
     const ball = el.querySelector('#rlBall'); if (!ball) return;
-    const rad = (ang - 90) * Math.PI / 180;
-    const x = 50 + Math.cos(rad) * radius * 0.42;
-    const y = 50 + Math.sin(rad) * radius * 0.42;
-    ball.style.left = x + '%'; ball.style.top = y + '%';
+    // radius는 SVG viewBox(220) 단위. 볼은 .wheel-rot 안에 있어 기울어진 휠과 같이 회전.
+    const rad = (ang - 90) * Math.PI / 180, pct = radius / 220 * 100;
+    ball.style.left = (50 + Math.cos(rad) * pct) + '%';
+    ball.style.top  = (50 + Math.sin(rad) * pct) + '%';
   }
   async function go() {
     if (st.phase !== 'bet') return;
@@ -190,10 +190,11 @@
     const n = Engine.spin(); st.spin = n;
     Audio2.play('wheel', { vol: 0.9 });
     const idx = ORDER.indexOf(n);
-    const pocketAng = 360 - (idx + 0.5) / 37 * 360; // wheel rotation so pocket is at top
-    const startW = st.ang, startB = st.ball;
+    const local = (idx + 0.5) / 37 * 360;          // 포켓 중심, 12시 기준 시계방향
+    const pocketAng = 180 - local;                 // 기울어진 휠의 앞쪽(6시/하단 포인터)에 포켓
+    const startW = st.ang, startB = st.ball || 0;
     const endW = startW + 360 * 5 + ((pocketAng - startW) % 360 + 360) % 360;
-    const endB = startB - 360 * 7 + ((pocketAng - startB) % 360 + 360) % 360; // ball goes opposite then settles
+    const endB = startB - 360 * 8 + ((local - startB) % 360 + 360) % 360; // 반대 방향으로 구르다 포켓에 안착
     const dur = 4200, t0 = performance.now();
     await new Promise((res) => {
       const step = (now) => {
@@ -203,7 +204,7 @@
         const be = k < 0.78 ? (k / 0.78) : 0.78 + (k - 0.78) / 0.22;
         const ee = 1 - Math.pow(1 - Math.min(1, be), 2);
         st.ball = startB + (endB - startB) * ee;
-        st.ballR = k < 0.75 ? 78 : 78 - 28 * ((k - 0.75) / 0.25);
+        st.ballR = k < 0.78 ? 94 : 94 - 8 * ((k - 0.78) / 0.22); // 외곽 트랙에서 번호 포켓(r≈86)으로
         const w = el.querySelector('#rlWheel'); if (w) w.style.transform = `rotateX(55deg) rotateZ(${st.ang}deg)`;
         placeBall(st.ballR, st.ball);
         if (k < 1) raf = requestAnimationFrame(step); else res();
@@ -221,8 +222,12 @@
     await wait(600); render();
   }
   function debugWin() {
-    st.spin=7; st.last=st.last.concat([32,15,19,4,7]); st.bets={'red':100,'n-7':50}; st.phase='bet';
-    const res=el.querySelector('#rlRes'); render();
+    st.spin=7;
+    const idx = ORDER.indexOf(7), local = (idx + 0.5) / 37 * 360;
+    st.ang = 180 - local; st.ball = local; st.ballR = 86;
+    st.last=st.last.concat([32,15,19,4,7]); st.bets={'red':100,'n-7':50}; st.phase='bet';
+    st.msg='당첨';
+    render();
   }
 
   if (typeof module !== 'undefined' && module.exports) module.exports = { DEF, Engine };

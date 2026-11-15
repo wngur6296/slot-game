@@ -9,7 +9,7 @@
     id: 'plinko', name: '플린코', level: 3, minBetIdx: 0, order: 25,
     cats: ['instant'], kind: 'instant',
     theme: { bgm: 'table_loop', cover: 'g_plinko', vars: { f1: '#ffd34d', f2: '#101018' } },
-    lobby: { rtp: 97.00, volatility: 3, tag: '인스턴트',
+    lobby: { blurb: '핀을 타고 떨어지는 공 · 배수 슬롯', rtp: 97.00, volatility: 3, tag: '인스턴트',
       pros: ['모든 행·리스크 조합 RTP 약 97%', '경로를 눈으로 따라감', '낮은 리스크는 빈번한 당첨'],
       cons: ['높은 리스크는 가운데가 거의 0에 가까움', '레벨 3 해금'],
       features: ['8/12/16행', '3단계 리스크'] }

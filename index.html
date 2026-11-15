@@ -12,12 +12,15 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/img/icon-180.png">
 <link rel="preload" as="image" href="assets/img/bg.webp">
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/games.css">
+<link rel="stylesheet" href="css/luxury.css">
 </head>
 <body>
 <div id="app">
   <div class="bg"></div><div class="bg-glow"></div>
+  <canvas id="sparkle"></canvas>
 
   <!-- 상단 HUD -->
   <header class="hud">
@@ -59,7 +62,7 @@
       <button class="chip" id="btnHourly"><span>🎁</span><em id="hourlyText">충전</em></button>
       <button class="chip" id="btnDaily"><span>📅</span><em>출석</em></button>
       <button class="chip shop-chip" id="btnStore"><span>🛒</span><em>상점</em></button>
-      <button class="chip" id="btnInfo"><span>📜</span><em>배당표</em></button>
+      <button class="chip" id="btnInfo"><span>📜</span><em>게임 방법</em></button>
     </div>
     <div class="spin-row">
       <div class="bet">
@@ -101,7 +104,7 @@
       <button class="icon-btn" id="tbHome" aria-label="로비">⌂</button>
       <div class="tb-title"><b id="tbName"></b><small id="tbSub"></small></div>
       <button class="pill coins" id="tbCoins"><span class="ico coin-ico"></span><b>0</b></button>
-      <button class="icon-btn" id="tbHelp" aria-label="규칙">?</button>
+      <button class="tb-guide" id="tbHelp" aria-label="게임 방법">게임 방법</button>
     </header>
     <div class="tb-stage" id="tbStage"></div>
   </section>
@@ -120,6 +123,13 @@
   <!-- 모달 -->
   <div class="modal" id="modal"><div class="sheet"><button class="close" id="modalClose">✕</button><div id="modalBody"></div></div></div>
   <div class="toast" id="toast"></div>
+  <div class="hint-tip" id="hintTip" hidden>
+    <div class="hint-bubble">
+      <b id="hintTitle"></b>
+      <p id="hintBody"></p>
+      <button type="button" id="hintOk">알겠어요</button>
+    </div>
+  </div>
 
   <!-- 첫 탭 (오디오 잠금 해제) -->
   <div class="intro" id="intro">
@@ -140,6 +150,7 @@
 <script src="js/audio.js"></script>
 <script src="js/economy.js"></script>
 <script src="js/effects.js"></script>
+<script src="js/sparkle.js"></script>
 <script src="js/shop.js"></script>
 <script src="js/reels.js"></script>
 <script src="js/ui.js"></script>
@@ -152,6 +163,7 @@
 <script src="js/games/plinko.js"></script>
 <script src="js/games/mines.js"></script>
 <script src="js/games.js"></script>
+<script src="js/guides.js"></script>
 <script src="js/lobby.js"></script>
 </body>
 </html>

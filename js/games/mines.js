@@ -5,7 +5,7 @@
     id: 'mines', name: '마인즈', level: 5, minBetIdx: 0, order: 26,
     cats: ['instant'], kind: 'instant',
     theme: { bgm: 'table_loop', cover: 'g_mines', vars: { f1: '#7ad8ff', f2: '#101018' } },
-    lobby: { rtp: 97.00, volatility: 4, tag: '인스턴트',
+    lobby: { blurb: '지뢰를 피해 칸을 여는 마인즈', rtp: 97.00, volatility: 4, tag: '인스턴트',
       pros: ['회수 시점을 스스로 정함', '어느 칸에서 회수해도 엣지 3%', '지뢰 수로 변동성 조절'],
       cons: ['한 번만 지뢰를 밟아도 베팅 전부 소멸', '레벨 5 해금'],
       features: ['5×5', '회수', '지뢰 1–24개'] }

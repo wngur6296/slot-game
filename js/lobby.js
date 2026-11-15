@@ -3,7 +3,7 @@ const Lobby = (() => {
   const $ = (id) => document.getElementById(id), C = SLOT_CONFIG, E = C.economy;
   const fmt = (n) => Math.floor(n).toLocaleString('ko-KR');
   let page = 'home', cat = 'all', bannerI = 0, tickT = 0;
-  const CATS = [['all', '전체'], ['hot', '인기'], ['slot', '슬롯'], ['table', '테이블'], ['card', '카드'], ['live', '라이브'], ['instant', '인스턴트'], ['jp', '잭팟']];
+  const CATS = [['all','전체','✨'],['hot','인기','🔥'],['slot','슬롯','🎰'],['table','테이블','♠️'],['card','카드','🃏'],['live','라이브','📡'],['instant','인스턴트','⚡'],['jp','잭팟','💎']];
   const catsOf = (d) => d.cats || ['slot'];
   const inCat = (d, c) => c === 'all' || (c === 'hot' && ['classic', 'bunny', 'blackjack', 'roulette', 'crash', 'vpoker'].includes(d.id))
     || (c === 'high' && d.lobby.volatility >= 4) || (c === 'jp' && (d.features || {}).progressive)
@@ -11,7 +11,7 @@ const Lobby = (() => {
     || catsOf(d).includes(c);
   const BANNERS = [
     { t: '♠️ 테이블 게임 OPEN', s: '블랙잭 · 유럽 룰렛 · 바카라', go: 'blackjack', cls: 'b2' },
-    { t: '🚀 크래시 & 인스턴트', s: '크래시 · 플린코 · 마인즈 추가', go: 'crash', cls: 'b1' },
+    { t: '🚀 크래시 & 인스턴트', s: '크래시 · 플린코 · 마인즈', go: 'crash', cls: 'b1' },
     { t: '💎 MEGA VAULT 누적 잭팟', s: () => `현재 잭팟 ${fmt(Machine.pool())} 코인`, go: 'mega', cls: 'b2' },
     { t: '🎁 30분마다 무료 충전', s: 'VIP 등급이 오를수록 충전량 UP', go: 'wallet', cls: 'b3' },
     { t: '🏆 일일 미션 이벤트', s: '미션 완료하고 보너스 코인 + 젬 받기', go: 'promo', cls: 'b4' }];
@@ -32,16 +32,16 @@ const Lobby = (() => {
     return `<div class="banner ${b.cls}" data-banner="${b.go}"><div><b>${b.t}</b><span>${typeof b.s === 'function' ? b.s() : b.s}</span></div><em>바로가기 ›</em>
         <div class="dots">${BANNERS.map((_, i) => `<i class="${i === bannerI % BANNERS.length ? 'on' : ''}"></i>`).join('')}</div></div>
       <div class="ticker"><span class="live">LIVE</span><div class="tk-win" id="tkWin"></div></div>
-      <div class="cats">${CATS.map(([k, n]) => `<button class="${k === cat ? 'on' : ''}" data-cat="${k}">${n}</button>`).join('')}</div>
+      <div class="cats">${CATS.map(([k, n, ic]) => `<button class="${k === cat ? 'on' : ''}" data-cat="${k}"><i>${ic}</i>${n}</button>`).join('')}</div>
       <div class="games">${L.map((d) => { const lock = s.level < d.level, PG = (d.features || {}).progressive, rtp = d.lobby.rtp;
         const art = d.theme.bg ? `url(assets/img/${d.theme.bg}.webp)` : `linear-gradient(160deg,${d.theme.vars.f2},${d.theme.vars.f1}55)`;
         return `<div class="gcard ${lock ? 'locked' : ''} ${(s.lastGame || s.lastSlot) === d.id ? 'last' : ''}" data-slot="${d.id}" style="--g1:${d.theme.vars.f1};--g2:${d.theme.vars.f2}">
           <div class="gc-art" style="background-image:${art}"><img src="assets/img/${d.theme.cover}.webp" alt="">${d.theme.character ? `<img class="gc-ch" src="assets/img/${d.theme.character.idle}.webp" alt="">` : ''}
             <span class="gc-tag">${d.lobby.tag}</span>${PG ? `<span class="gc-jp">JACKPOT ${fmt(s.pools[d.id] || PG.seed)}</span>` : ''}${lock ? `<span class="gc-lock">🔒 Lv.${d.level}</span>` : ''}</div>
           <div class="gc-body"><h4>${d.name}</h4>
+            <p class="gc-blurb">${d.lobby.blurb || d.lobby.features[0] || ''}</p>
             <div class="gc-meta"><span>변동성 ${vol(d.lobby.volatility)}</span><span>RTP <b>${rtp}%</b></span><span>최소 <b>${fmt(C.economy.betLevels[d.minBetIdx || 0])}</b></span></div>
             <div class="gc-feat">${d.lobby.features.map((f) => `<i>${f}</i>`).join('')}</div>
-            <ul class="gc-pc">${d.lobby.pros.map((p) => `<li class="pro">${p}</li>`).join('')}${d.lobby.cons.map((p) => `<li class="con">${p}</li>`).join('')}</ul>
             <button class="gc-play">${lock ? `레벨 ${d.level} 필요` : '플레이'}</button></div></div>`; }).join('') || '<p class="empty">해당 게임이 없어요</p>'}</div>
       <p class="foot">실제 돈이 오가지 않는 게임입니다</p>`;
   }
@@ -86,7 +86,7 @@ const Lobby = (() => {
     el.innerHTML = { home, promo, wallet }[page](); el.scrollTop = sc;
     document.querySelectorAll('.lb-page').forEach((p) => p.classList.toggle('on', p.dataset.page === page));
     document.querySelectorAll('.lb-nav button').forEach((b) => b.classList.toggle('on', b.dataset.go === page));
-    if (page === 'home') { ticker(true); const on = document.querySelector('.cats button.on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }); }
+    if (page === 'home') ticker(true);
   }
   function ticker(now) { const el = $('tkWin'); if (!el) return; const w = fakeWin();
     el.innerHTML = `<span class="tk-in"><b>${w.n}</b>님 ${w.g}에서 <em>${fmt(w.w)}</em> 당첨! <small>x${w.x}</small></span>`; }

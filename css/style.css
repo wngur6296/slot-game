@@ -5,7 +5,8 @@
   --gold1:#fff3b0; --gold2:#ffd34d; --gold3:#e6a019; --gold4:#9a5a06;
   --pink:#ff3d9a; --purple:#2a0b3d; --deep:#14051f; --cyan:#4de1ff;
   --sat:env(safe-area-inset-top); --sab:env(safe-area-inset-bottom);
-  --font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","NanumGothic",sans-serif;
+  --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --display:"Cinzel",Palatino,"Palatino Linotype",serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{height:100%;background:var(--deep);color:#fff;font-family:var(--font);overflow:hidden;
