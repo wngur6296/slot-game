@@ -57,38 +57,78 @@ body.in-table .machine,body.in-table .controls,body.in-table .logo,body.in-table
 .bj-end{text-align:center;font-weight:800;margin-bottom:8px;color:#ffd34d}
 
 /* 룰렛 */
-.rl-top{display:flex;align-items:center;justify-content:center;gap:10px;height:168px}
-.wheel-3d{position:relative;width:210px;height:170px;perspective:820px}
-.wheel-rot{width:200px;height:200px;position:absolute;left:0;top:-10px;transform-origin:50% 50%;filter:drop-shadow(0 10px 16px #0009)}
-.rl-svg{width:100%;height:100%;overflow:visible}
-.rl-ball{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #000a,0 0 6px #fff8;z-index:3;pointer-events:none}
-.rl-hub{display:none}
-.rl-res{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:22px;background:#111;border:3px solid #d4af6a}
+.rl-stage{display:flex;align-items:center;justify-content:center;gap:6px;height:268px;flex:none;position:relative}
+.rl-persp{position:relative;width:300px;height:248px;perspective:1100px;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.rl-persp.zoom{transform:scale(1.12) translateY(4px)}
+.rl-persp::before{content:"";position:absolute;left:50%;top:54%;width:84%;height:46%;transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse,rgba(0,0,0,.35) 30%,transparent 72%);pointer-events:none;z-index:0}
+.rl-plane{position:absolute;left:10px;top:-22px;width:280px;height:280px;transform:rotateX(44deg);transform-style:preserve-3d;transform-origin:50% 50%;z-index:1}
+.rl-scene{width:100%;height:100%;display:block;pointer-events:none}
+.rl-pointer{
+  position:absolute;left:50%;bottom:14px;z-index:5;width:0;height:0;
+  border-left:9px solid transparent;border-right:9px solid transparent;
+  border-bottom:18px solid #ffd34d;
+  transform:translate(-50%,0) rotate(180deg);
+  filter:drop-shadow(0 0 8px rgba(255,211,77,.95));
+  pointer-events:none;
+}
+.rl-res{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:24px;
+  background:#111;border:3px solid #d4af6a;box-shadow:0 0 0 3px #0006,0 6px 16px #0008;flex:none;z-index:2}
 .rl-res.red{background:#c4122f;border-color:#ffd0d0}.rl-res.black{background:#111}.rl-res.green{background:#0a7a3e}
 .rl-res.pop{animation:pop .4s}
-@keyframes pop{50%{transform:scale(1.15)}}
+.rl-res.win{box-shadow:0 0 0 3px rgba(255,211,77,.7),0 0 22px #ffd34d,0 6px 16px #0008}
+@keyframes pop{50%{transform:scale(1.18)}}
 .rl-hist{display:flex;gap:4px;overflow:hidden;min-height:26px;align-items:center;margin:4px 0}
 .rl-hist i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:800;font-style:normal}
 .rl-hist i.red{background:#c4122f}.rl-hist i.black{background:#222;border:1px solid #fff3}.rl-hist i.green{background:#0a7a3e}
 .rl-hc{display:flex;justify-content:space-between;font-size:10px;opacity:.75;margin-bottom:4px}
 .rl-board{flex:1;min-height:0;overflow:auto}
-.rl-table{display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto auto auto;gap:3px;font-size:11px}
-.rl-0{grid-row:1/3;border:0;border-radius:8px;background:#0a7a3e;color:#fff;font-weight:900}
-.rl-grid{display:flex;flex-direction:column;gap:3px}
-.rl-row{display:grid;grid-template-columns:repeat(12,1fr) 1.15fr;gap:3px}
-.rl-n,.rl-out{position:relative;border:0;border-radius:5px;color:#fff;font:inherit;font-weight:800;min-height:28px;padding:0}
-.rl-n.red,.rl-out.red{background:#c4122f}.rl-n.black,.rl-out.black{background:#1a1a1a}.rl-n.green{background:#0a7a3e}
-.rl-n.hit,.rl-0.hit{box-shadow:0 0 0 2px #ffd34d,0 0 10px #ffd34d}
-.rl-n b,.rl-out b,.rl-0 b{position:absolute;right:1px;bottom:0;font-size:8px;background:#ffd34d;color:#2a1500;border-radius:4px;padding:0 2px}
-.rl-doz,.rl-outrow{grid-column:1/-1;display:grid;gap:3px}
+.rl-table{display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto auto auto;gap:2px;font-size:11px;
+  padding:4px;border:1px solid #d4af6a66;border-radius:10px;background:rgba(0,20,10,.2);box-shadow:inset 0 0 0 1px rgba(255,230,160,.12)}
+.rl-0{grid-row:1/3;border:1px solid #d4af6a99;border-radius:6px;background:#0a7a3e;color:#fff;font-weight:900}
+.rl-grid{display:flex;flex-direction:column;gap:2px}
+.rl-row{display:grid;grid-template-columns:repeat(12,1fr) 1.15fr;gap:2px}
+.rl-n,.rl-out{position:relative;border:1px solid #d4af6a77;border-radius:4px;color:#fff;font:inherit;font-weight:800;min-height:28px;padding:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -2px 4px rgba(0,0,0,.25)}
+.rl-n.red,.rl-out.red{background:linear-gradient(#d4183a,#9a0e24)}.rl-n.black,.rl-out.black{background:linear-gradient(#2a2a2a,#111)}.rl-n.green{background:#0a7a3e}
+.rl-n.hit,.rl-0.hit{box-shadow:0 0 0 2px #ffd34d,0 0 14px #ffd34d;z-index:1}
+.rl-doz,.rl-outrow{grid-column:1/-1;display:grid;gap:2px}
 .rl-doz{grid-template-columns:repeat(3,1fr)}.rl-outrow{grid-template-columns:repeat(6,1fr)}
-.rl-out{background:#0d4a32;min-height:32px;font-size:9px}
+.rl-out{background:linear-gradient(#146a45,#0d4a32);min-height:32px;font-size:9px;letter-spacing:.02em}
 .hit-e,.hit-n,.hit-c,.hit-s{position:absolute;z-index:2}
 .hit-e{top:20%;right:-4px;width:8px;height:60%}
 .hit-n{left:20%;top:-4px;width:60%;height:8px}
 .hit-c{right:-5px;top:-5px;width:10px;height:10px}
 .hit-s{left:-3px;top:20%;width:6px;height:60%}
 .rl-tot{text-align:center;font-size:13px}.rl-tot b{color:#ffd34d}
+
+/* 3D 칩 스택 */
+.rl-stack{position:absolute;right:1px;bottom:1px;width:18px;height:16px;pointer-events:none;z-index:2}
+.rl-stack .rl-chip{position:absolute;left:0;bottom:0;width:16px;height:16px;transform:translateY(calc(var(--i) * -2px))}
+.rl-stack em{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);font-style:normal;font-size:7px;font-weight:900;
+  background:#ffd34d;color:#2a1500;border-radius:4px;padding:0 2px;white-space:nowrap}
+.rl-chip{display:block;width:22px;height:22px;border-radius:50%;background-size:cover;background-position:center;
+  box-shadow:0 1px 1px #0008,0 2px 0 #0005,inset 0 1px 0 #fff4;flex:none}
+.rl-chip.red{background-image:url(../assets/img/chip_red.webp)}
+.rl-chip.black{background-image:url(../assets/img/chip_black.webp)}
+.rl-chip.green{background-image:url(../assets/img/chip_green.webp)}
+.rl-chip.blue{background-image:url(../assets/img/chip_blue.webp)}
+.rl-chip.purple{background-image:url(../assets/img/chip_purple.webp)}
+.rl-chip.gold{background-image:url(../assets/img/chip_gold.webp)}
+.rl-chip.white{background-image:url(../assets/img/chip_white.webp)}
+.chipv.rl-tray{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 8px 6px;border-radius:14px;background:#0005;border:1px solid #ffffff22}
+.chipv.rl-tray.on{background:linear-gradient(#ffe27a44,#f0a02033);border-color:#ffd34d;box-shadow:0 0 12px #ffd34d55}
+.chipv.rl-tray .rl-chip{width:26px;height:26px}
+.chipv.rl-tray span{font-size:10px;font-weight:800}
+
+@media (max-width:380px){
+  .rl-stage{height:244px}
+  .rl-persp{width:270px;height:228px}
+  .rl-plane{width:254px;height:254px;left:8px;top:-18px}
+  .rl-pointer{bottom:12px}
+  .rl-out{font-size:8px}
+  .pcard,.vp-c .pcard{width:54px;height:78px}
+}
 
 /* 바카라 */
 .bc-roads{display:flex;gap:8px;background:#0006;border-radius:10px;padding:6px;max-height:110px;overflow:auto}
