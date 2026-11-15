@@ -92,6 +92,7 @@
   }
 
   function resetSeat(p) {
+    if (p.invested) p.stack += p.invested;
     p.hole = []; p.folded = false; p.allIn = false; p.streetBet = 0; p.invested = 0;
     p.acted = false; p.live = true; p.inHand = false; p.hand = null; p.won = 0; p.revealed = false;
   }
@@ -122,14 +123,17 @@
     t.currentBet = Math.max(t.seats[sbI].streetBet, t.seats[bbI].streetBet);
     t.minRaise = t.bb;
     t.lastFull = t.seats[bbI].allIn && t.seats[bbI].streetBet < t.bb ? -1 : bbI;
-    // 딜: 버튼 왼쪽부터 두 장
+    // 딜: 핸드에 있는 플레이어에게만, 버튼 왼쪽부터 정확히 두 장
+    const nDeal = live.length;
     for (let r = 0; r < 2; r++) {
       let i = t.button;
-      for (let k = 0; k < t.seats.length; k++) {
+      for (let k = 0; k < nDeal; k++) {
         i = nextIdx(t, i, (p) => p.inHand);
+        if (i < 0) break;
         t.seats[i].hole.push(t.deck.pop());
       }
     }
+    live.forEach((p) => { if (p.hole.length > 2) p.hole.length = 2; });
     t.street = 'preflop';
     t.seats.forEach((p) => { p.acted = false; p.live = canAct(p); });
     t.toAct = nextIdx(t, bbI, (p) => needsAction(t, p));
@@ -202,6 +206,14 @@
     const nxt = nextIdx(t, id, (q) => needsAction(t, q));
     if (nxt < 0) endStreet(t);
     else t.toAct = nxt;
+    return t;
+  }
+
+  function foldOut(t, id) {
+    const p = t.seats[id];
+    if (!p || p.folded) return t;
+    p.folded = true; p.acted = true; p.live = false;
+    t.lastAct = { id, type: 'fold', amt: 0 };
     return t;
   }
 
@@ -421,10 +433,10 @@
     return t;
   }
 
-  const Engine = { create, startHand, legal, apply, decide, runHand, rebuy, addAI, removeAI, potOf, chipsOf, thinkMs, showdown, legalActs: legal };
+  const Engine = { create, startHand, legal, apply, decide, runHand, rebuy, addAI, removeAI, potOf, chipsOf, thinkMs, showdown, legalActs: legal, foldOut };
 
   /* ---------------- UI ---------------- */
-  let api, rootEl, table, view = 'setup', timers = [], cashed = false, selectedTo = 0, tickT = 0, flying = [];
+  let api, rootEl, table, view = 'setup', timers = [], cashed = false, selectedTo = 0, tickT = 0, flying = [], leaving = false, confirmLeave = false, pendingLeave = null;
 
   const $ = (s, el) => (el || rootEl).querySelector(s);
   const $$ = (s, el) => [...(el || rootEl).querySelectorAll(s)];
@@ -451,26 +463,65 @@
     e.save();
   }
 
-  function cashOut() {
-    if (cashed || !table) return;
+  function hideHint() {
+    const tip = document.getElementById('hintTip');
+    if (tip) { tip.classList.remove('on'); tip.hidden = true; }
+  }
+
+  function cashOut(opts) {
+    if (cashed || !table) return 0;
     const h = table.seats.find((p) => p.isHero);
-    if (!h) { cashed = true; return; }
+    if (!h) { cashed = true; return 0; }
     cashed = true;
-    const stack = h.stack + h.invested;
+    const stack = (opts && opts.forfeitBets) ? h.stack : (h.stack + h.invested);
     h.stack = 0; h.invested = 0;
     if (api && api.settle) api.settle('홀덤 테이블 퇴장', table.heroBuyIn || 0, stack);
     const e = E(); if (e) { e.s.holdemSession = null; e.save(); }
     if (api && api.hud) api.hud();
+    return stack;
+  }
+
+  function midHand() {
+    return !!(table && table.street !== 'idle' && table.street !== 'complete');
+  }
+
+  function goLobby(done) {
+    pendingLeave = null;
+    try {
+      if (window.Tables && typeof Tables.forceLeave === 'function') Tables.forceLeave();
+      else if (typeof done === 'function') done();
+    } catch (err) { try { if (typeof done === 'function') done(); } catch (e2) {} }
+  }
+  function leaveNow(done, forfeit) {
+    if (leaving && cashed) { goLobby(done); return; }
+    leaving = true; confirmLeave = false;
+    clearTimers();
+    if (api && api.setBusy) api.setBusy(false);
+    if (table && forfeit) {
+      const h = table.seats.find((p) => p.isHero);
+      if (h && h.inHand && !h.folded) Engine.foldOut(table, h.id);
+      cashOut({ forfeitBets: true });
+    } else cashOut();
+    goLobby(done);
+  }
+
+  function requestLeave(done) {
+    hideHint();
+    if (cashed) { if (typeof done === 'function') done(); return; }
+    if (!midHand()) { leaveNow(done, false); return; }
+    confirmLeave = true;
+    pendingLeave = done || pendingLeave;
+    if (rootEl && table) renderTable();
   }
 
   function seatXY(i, n, heroI) {
     const k = (i - heroI + n) % n;
     const ang = Math.PI / 2 + (2 * Math.PI * k) / n;
     const c = Math.cos(ang), si = Math.sin(ang);
-    let l = 50 + 40 * c, t = 50 + 38 * si;
-    if (k !== 0 && Math.abs(c) > 0.78) { l = 50 + 40 * c; t = Math.min(62, t + 4); }
-    if (k !== 0 && si < -0.5) t = Math.max(16, t - 2);
-    const side = l < 30 ? 's-left' : l > 70 ? 's-right' : (t < 40 ? 's-top' : (t > 70 ? 's-bot' : 's-mid'));
+    let l = 50 + 40 * c, t = 50 + 37 * si;
+    if (k !== 0 && si < -0.35) { t = Math.max(13, t - 6); l = 50 + (Math.abs(c) > 0.4 ? 44 : 36) * c; }
+    if (k !== 0 && Math.abs(c) > 0.72 && t > 28) t = Math.min(66, t + 10);
+    const side = (k !== 0 && t < 42) ? 's-top' : (l < 34 ? 's-left' : l > 66 ? 's-right' : 's-bot');
     return { l, t, side };
   }
 
@@ -548,16 +599,17 @@
     const p = prefs();
     const buy = p.buyInBb * p.bb;
     if (!api.wager(buy, false)) { api.toast('잔액이 부족해요'); return; }
-    cashed = false;
+    cashed = false; leaving = false; confirmLeave = false;
+    hideHint();
     table = Engine.create({ nAI: p.nAI, sb: p.sb, bb: p.bb, buyIn: buy, diff: p.diff, hero: true, heroStack: buy, rng: Math.random });
     saveSession(); api.hud();
     view = 'table';
-    renderTable();
     startNextHand();
   }
 
   function startNextHand() {
-    clearTimers();
+    if (!table || midHand()) return;
+    clearTimers(); confirmLeave = false;
     const h = table.seats.find((p) => p.isHero);
     if (h && h.stack <= 0) { renderTable(); return; }
     if (table.seats.filter((p) => p.sitting && p.stack > 0).length < 2) { table.msg = '상대가 부족합니다. AI를 추가하세요'; renderTable(); return; }
@@ -687,6 +739,14 @@
 
     const rankLine = (table.street === 'complete' && table.msg) ? table.msg : (hero && hero.hole.length && table.board.length >= 3 && !hero.folded ? (Eval.describe(Eval.bestOf(hero.hole.concat(table.board))) || '') : (table.street === 'preflop' ? '프리플롭' : table.street === 'flop' ? '플롭' : table.street === 'turn' ? '턴' : table.street === 'river' ? '리버' : ''));
 
+    const leaveBtn = `<button type="button" class="tba ghost hd-leave" id="hdLeave">테이블 퇴장</button>`;
+    const confirmH = confirmLeave ? `<div class="hd-confirm" id="hdConfirm">
+        <p>진행 중인 핸드는 폴드됩니다. 남은 칩은 지갑으로 이동합니다.</p>
+        <div class="hd-row">
+          <button type="button" class="tba ghost" id="hdLeaveNo">계속 플레이</button>
+          <button type="button" class="tba deal" id="hdLeaveYes">테이블 퇴장</button>
+        </div>
+      </div>` : '';
     let bar = '';
     if (between) {
       const canRe = hero && hero.stack <= 0;
@@ -699,9 +759,10 @@
         </div>
         ${canRe ? `<div class="hd-rebuy">바이인 ${fmt(defBuy)} <button type="button" class="tba" id="hdRebuy">다시 참가</button></div>` : ''}
         <div class="hd-row">
-          <button type="button" class="tba ghost" id="hdLeave">테이블 퇴장</button>
+          ${leaveBtn}
           <button type="button" class="tba deal" id="hdNext" ${canRe || table.seats.filter((p) => p.stack > 0).length < 2 ? 'disabled' : ''}>다음 핸드</button>
         </div>
+        ${confirmH}
       </div>`;
     } else if (L) {
       const potF = (f) => Math.min(L.maxTo, Math.max(L.minTo, Math.round((pot + L.toCall) * f + table.currentBet)));
@@ -717,16 +778,22 @@
         <div class="hd-row">
           <button type="button" class="tba ghost" id="hdFold">폴드</button>
           ${L.canCheck ? `<button type="button" class="tba" id="hdCheck">체크</button>` : `<button type="button" class="tba" id="hdCall">콜 ${fmt(L.callAmt)}</button>`}
-          ${L.canRaise ? `<button type="button" class="tba deal" id="hdRaise">${L.short || (selectedTo >= L.maxTo) ? '올인' : '레이즈'}</button>` : (L.canCall && L.callAmt === L.maxTo - (hero.streetBet) ? '' : '')}
+          ${L.canRaise ? `<button type="button" class="tba deal" id="hdRaise">${L.short || (selectedTo >= L.maxTo) ? '올인' : '레이즈'}</button>` : ''}
         </div>
+        <div class="hd-row hd-leave-row">${leaveBtn}</div>
+        ${confirmH}
       </div>`;
     } else {
-      bar = `<div class="hd-bar wait"><div class="hd-msg">${rankLine || '상대의 행동을 기다리는 중'}</div></div>`;
+      bar = `<div class="hd-bar wait"><div class="hd-msg">${rankLine || '상대의 행동을 기다리는 중'}</div>
+        <div class="hd-row hd-leave-row">${leaveBtn}</div>
+        ${confirmH}
+      </div>`;
     }
 
+    rootEl.dataset.n = String(n);
     rootEl.innerHTML = `<div class="felt felt-hd">
       <div class="hd-oval">
-        <div class="hd-center" style="top:34%">
+        <div class="hd-center">
           <div class="hd-board">${boardH}</div>
           <div class="hd-pot">${pot > 0 ? chipStack(pot, 'pot') + '<b>' + fmt(pot) + '</b>' : (table.street === 'complete' ? '<b class="hd-pot-done">정산</b>' : '<b>0</b>')}<small>팟 · ${table.sb}/${table.bb}</small></div>
           <div class="hd-rank">${table.street === 'complete' ? rankLine : (hero && !hero.folded && table.board.length >= 3 ? rankLine : '')}</div>
@@ -763,7 +830,9 @@
         return;
       }
       if (t.id === 'hdNext') { selectedTo = 0; startNextHand(); return; }
-      if (t.id === 'hdLeave') { tryLeave(); return; }
+      if (t.id === 'hdLeave') { requestLeave(() => { if (window.Tables) Tables.forceLeave(); }); return; }
+      if (t.id === 'hdLeaveYes') { leaveNow(pendingLeave || (() => { if (window.Tables) Tables.forceLeave(); }), true); return; }
+      if (t.id === 'hdLeaveNo') { confirmLeave = false; renderTable(); return; }
       if (t.id === 'hdAddAI') { Engine.addAI(table); renderTable(); return; }
       if (t.id === 'hdDelAI') {
         const last = [...table.seats].reverse().find((p) => !p.isHero);
@@ -782,26 +851,17 @@
     saveSession(); api.hud(); renderTable();
   }
 
-  function tryLeave() {
-    if (table && table.street !== 'complete' && table.street !== 'idle') {
-      api.toast('핸드가 끝난 뒤 퇴장할 수 있어요');
-      return;
-    }
-    if (api.setBusy) api.setBusy(false);
-    cashOut();
-    if (window.Tables) Tables.leave();
-  }
-
   function mount(el, a) {
-    api = a; rootEl = el; view = 'setup'; table = null; cashed = false; selectedTo = 0; clearTimers();
+    api = a; rootEl = el; view = 'setup'; table = null; cashed = false; leaving = false; confirmLeave = false; pendingLeave = null; selectedTo = 0; clearTimers();
     el.classList.add('hd-root');
     renderSetup();
   }
   function unmount() {
-    clearTimers();
+    clearTimers(); confirmLeave = false; pendingLeave = null;
     document.querySelectorAll('.hd-fly').forEach((n) => n.remove());
     if (table && !cashed) cashOut();
-    table = null; if (rootEl) rootEl.innerHTML = ''; if (api && api.setBusy) api.setBusy(false);
+    table = null; if (rootEl) { rootEl.innerHTML = ''; rootEl.onclick = null; rootEl.oninput = null; }
+    if (api && api.setBusy) api.setBusy(false);
   }
   function help() { if (window.Guides) Guides.open('holdem'); }
   function busy() { return !!(table && table.street !== 'complete' && table.street !== 'idle'); }
@@ -826,8 +886,8 @@
     if (api && api.setBusy) api.setBusy(false);
     renderTable('deal');
   }
-  function debugShowdown() {
-    skipWalletJoin({ nAI: 6, buyIn: 5000 });
+  function debugShowdown(opts) {
+    skipWalletJoin(Object.assign({ nAI: 6, buyIn: 5000 }, opts || {}));
     Engine.startHand(table);
     const used = new Set();
     const take = (r, s) => { used.add(r + s); return Cards.card(r, s); };
@@ -851,10 +911,10 @@
   }
   function debugWin() { debugShowdown(); }
 
-  const UI = { mount, unmount, help, busy, debugWin, debugSetup, debugPreflop, debugShowdown };
-  if (typeof module !== 'undefined' && module.exports) module.exports = { DEF, Engine, AI: { decide, styleOf, preflopScore }, UI, ACT_KO };
+  const UI = { mount, unmount, help, busy, requestLeave, debugWin, debugSetup, debugPreflop, debugShowdown };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { DEF, Engine, AI: { decide, styleOf, preflopScore }, UI, ACT_KO, requestLeave };
   else {
     root.GAME_DEFS = root.GAME_DEFS || []; root.GAME_DEFS.push(DEF);
-    root.GAME_MODS = root.GAME_MODS || {}; root.GAME_MODS.holdem = { DEF, Engine, mount, unmount, help, busy, debugWin, debugSetup, debugPreflop, debugShowdown };
+    root.GAME_MODS = root.GAME_MODS || {}; root.GAME_MODS.holdem = { DEF, Engine, mount, unmount, help, busy, requestLeave, debugWin, debugSetup, debugPreflop, debugShowdown, getTable: () => table, startNextHand };
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this);

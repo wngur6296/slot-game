@@ -161,5 +161,20 @@ function sim(nHands, nAI, seed, rebuy) {
   console.log('  sim8', JSON.stringify(r));
 }
 
+
+// ---- busted seats must still get exactly 2 hole cards (not 4) ----
+{
+  for (const [nAI, bust] of [[6,1],[8,2],[3,1]]) {
+    const t = Engine.create({ nAI, hero: false, sb: 25, bb: 50, buyIn: 500, rng: mulberry32(800 + nAI + bust) });
+    const start = Engine.chipsOf(t);
+    for (let i = 0; i < bust; i++) t.seats[i].stack = 0;
+    const afterBust = Engine.chipsOf(t);
+    Engine.startHand(t);
+    const bad = t.seats.filter((p) => (p.inHand && p.hole.length !== 2) || (!p.inHand && p.hole.length !== 0));
+    ok(bad.length === 0, 'deal 2 cards with '+bust+' busted in '+nAI+'max: '+t.seats.map((p)=>p.hole.length).join(','));
+    ok(Engine.chipsOf(t) === afterBust, 'deal with busted conserves chips');
+  }
+}
+
 console.log(fail ? 'FAILED '+fail : 'ALL ENGINE TESTS PASSED');
 process.exit(fail ? 1 : 0);

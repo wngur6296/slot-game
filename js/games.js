@@ -66,11 +66,16 @@ const Tables = (() => {
     mod.mount($('tbStage'), { E: E(), fmt, wager, settle, hud, toast, help, setBusy, isBusy: () => busy, levels: levels(), minBet: levels()[d.minBetIdx || 0], def: d });
     setTimeout(() => { if (window.Guides) Guides.maybeTip(id); }, 450);
   }
-  function leave() {
-    if (busy) return toast('라운드가 끝난 뒤 로비로 갈 수 있어요');
+  function forceLeave() {
+    busy = false;
     if (cur && cur.unmount) try { cur.unmount(); } catch (e) {}
     cur = null; $('tbStage').innerHTML = ''; $('table').classList.remove('on'); document.body.classList.remove('in-table');
     Lobby.show();
+  }
+  function leave() {
+    if (cur && typeof cur.requestLeave === 'function') return cur.requestLeave(forceLeave);
+    if (busy) return toast('라운드가 끝난 뒤 로비로 갈 수 있어요');
+    forceLeave();
   }
   function showHelp() { if (window.Guides) Guides.open($('table').dataset.game); else if (cur && cur.help) cur.help(); }
 
@@ -82,5 +87,7 @@ const Tables = (() => {
   }
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', bind); else bind();
 
-  return { enter, leave, hud, toast, settle, wager, fmt, setBusy, get busy() { return busy; }, get current() { return cur; } };
+  const api = { enter, leave, forceLeave, hud, toast, settle, wager, fmt, setBusy, get busy() { return busy; }, get current() { return cur; } };
+  if (typeof window !== 'undefined') window.Tables = api;
+  return api;
 })();
