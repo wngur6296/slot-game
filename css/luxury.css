@@ -118,7 +118,7 @@
 
 /* 테이블 펠트 + 장식 */
 .felt{position:relative}
-.felt-bj,.felt-rl{
+.felt-bj,.felt-rl,.felt-hd{
   background:
     linear-gradient(180deg,rgba(8,40,24,.35),rgba(4,16,10,.72)),
     url(../assets/img/felt_green.webp) center/cover;
@@ -138,7 +138,7 @@
     linear-gradient(180deg,rgba(16,10,28,.4),rgba(6,4,12,.8)),
     url(../assets/img/felt_dark.webp) center/cover;
 }
-.felt-bj::before,.felt-bc::before,.felt-vp::before{
+.felt-bj::before,.felt-bc::before,.felt-vp::before,.felt-hd::before{
   content:"";position:absolute;right:6px;bottom:72px;width:86px;height:64px;
   background:url(../assets/img/chips_stack.webp) center/contain no-repeat;
   opacity:.5;pointer-events:none;filter:drop-shadow(0 4px 8px #0008);
@@ -222,6 +222,7 @@
 .cr-mult{font-family:var(--display),var(--font);letter-spacing:.04em}
 .felt-bc::before{display:none}
 .felt-bj::before,.felt-vp::before{bottom:130px;opacity:.42}
+.felt-hd::before{display:none}
 
 /* 프리미엄 룰렛 스테이지 (캔버스 휠) */
 .wheel-3d,.wheel-rot,.rl-ball{/* legacy no-op if unused */}

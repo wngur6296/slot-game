@@ -105,11 +105,11 @@ fs.mkdirSync(OUT, { recursive: true });
   }
   await shotGame('roulette', 'game_roulette.jpg', true);
   await shotGame('baccarat', 'game_baccarat.jpg', true);
-  await shotGame('vpoker', 'game_vpoker.jpg', true);
+  await shotGame('holdem', 'game_holdem.jpg', true);
   await p.click('#tbHelp', { force: true });
   await p.waitForTimeout(400);
-  ok(await p.evaluate(() => /비디오 포커/.test(document.getElementById('modalBody').innerText) && /99\.54/.test(document.getElementById('modalBody').innerText)), 'guide vpoker');
-  await p.screenshot({ path: OUT + 'guide_vpoker.jpg', type: 'jpeg', quality: 82 });
+  ok(await p.evaluate(() => /텍사스 홀덤/.test(document.getElementById('modalBody').innerText) && /레이크 없음/.test(document.getElementById('modalBody').innerText)), 'guide holdem');
+  await p.screenshot({ path: OUT + 'guide_holdem.jpg', type: 'jpeg', quality: 82 });
   await p.evaluate(() => Game.closeModal());
   await shotGame('crash', 'game_crash.jpg', true);
   await shotGame('plinko', 'game_plinko.jpg', false);

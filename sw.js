@@ -1,5 +1,5 @@
 // 오프라인 지원용 서비스워커 (네트워크 우선 → 실패 시 캐시). 파일 수정 시 즉시 반영됩니다.
-const CACHE = 'luckyslot-v7';
+const CACHE = 'luckyslot-v8';
 self.addEventListener('install', (e) => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', (e) => {

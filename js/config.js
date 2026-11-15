@@ -4,7 +4,7 @@
  * ========================================================= */
 (function (root) {
   const CONFIG = {
-    version: 4,            // 저장 데이터 버전 (구조 바꾸면 +1 하고 economy.js migrate에 단계 추가)
+    version: 5,            // 저장 데이터 버전 (구조 바꾸면 +1 하고 economy.js migrate에 단계 추가)
     saveKey: 'luckyslot_save_v1',
 
     // ★ 슬롯별 심볼/확률/배당/테마는 js/slots/*.js 에 있습니다. (아래는 모든 슬롯 공통)

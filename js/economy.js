@@ -4,11 +4,24 @@ const Economy = (() => {
   const fresh = () => ({ v: C.version, coins: E.startCoins, gems: E.startGems, level: 1, xp: 0, betIdx: 0,
     lastHourly: 0, lastDaily: '', dailyStreak: 0, streak: 0, freeSpins: 0, fsTotal: 0,
     settings: { sfx: true, bgm: true, turbo: false }, stats: { spins: 0, wagered: 0, won: 0, biggest: 0, jackpots: 0 },
-    ...shopFields(), ...v3Fields(), ...v4Fields() });
+    ...shopFields(), ...v3Fields(), ...v4Fields(), ...v5Fields() });
   // v3: 멀티 슬롯 · VIP · 미션 · 거래내역 · 누적잭팟
   function v3Fields() { return { lastSlot: 'classic', pools: {}, vipPts: 0, tx: [], missions: { day: '', prog: {}, claimed: [] }, slotsPlayed: {}, lastCharge: 0 }; }
   // v4: 테이블/카드/인스턴트 게임 (룰렛 히스토리, 바카라 로드, 플레이 기록)
   function v4Fields() { return { lastGame: 'classic', tablesPlayed: {}, rouletteHist: [], baccaratBead: [], baccaratBig: [], crashHist: [], seenHints: {} }; }
+  // v5: 홀덤 설정/세션, 비디오포커 데이터 정리
+  function v5Fields() { return { holdemPrefs: { nAI: 3, sb: 25, bb: 50, buyInBb: 100, diff: 'normal' }, holdemSession: null }; }
+  function reclaimHoldem(d) {
+    const ses = d.holdemSession;
+    if (ses && ses.stack > 0) {
+      d.coins += ses.stack;
+      const net = ses.stack - (ses.totalBuyIn || 0);
+      d.tx = d.tx || [];
+      d.tx.unshift({ t: Date.now(), type: 'game', label: '홀덤 잔액 반환', amount: net, cur: 'coins', bal: d.coins });
+      if (d.tx.length > 150) d.tx.length = 150;
+    }
+    d.holdemSession = null;
+  }
   // v2: 상점 (보유/장착/버프)
   function shopFields() { const D = (typeof SHOP_CONFIG !== 'undefined' ? SHOP_CONFIG.defaults : {});
     return { owned: Object.values(D), equipped: { ...D }, buffs: {}, autopassUntil: 0 }; }
@@ -18,6 +31,14 @@ const Economy = (() => {
     if (!d.v || d.v < 2) { Object.assign(d, shopFields()); d.v = 2; }
     if (d.v < 3) { Object.assign(d, v3Fields(), { lastCharge: d.lastHourly || 0, vipPts: (d.stats && d.stats.wagered) || 0 }); d.v = 3; }
     if (d.v < 4) { Object.assign(d, v4Fields(), { lastGame: d.lastSlot || 'classic' }); d.v = 4; }
+    if (d.v < 5) {
+      Object.assign(d, v5Fields());
+      if (d.lastGame === 'vpoker') d.lastGame = 'holdem';
+      if (d.seenHints) delete d.seenHints.vpoker;
+      if (d.tablesPlayed) delete d.tablesPlayed.vpoker;
+      d.v = 5;
+    }
+    reclaimHoldem(d);
     const f = fresh(); const out = Object.assign(f, d);
     out.settings = Object.assign(fresh().settings, d.settings); out.stats = Object.assign(fresh().stats, d.stats);
     out.equipped = Object.assign(shopFields().equipped, d.equipped); out.owned = [...new Set([...shopFields().owned, ...(d.owned || [])])];

@@ -5,7 +5,6 @@ const path = require('path');
 const BJ = require(path.join(__dirname, '../js/games/blackjack.js')).Engine;
 const RL = require(path.join(__dirname, '../js/games/roulette.js')).Engine;
 const BC = require(path.join(__dirname, '../js/games/baccarat.js')).Engine;
-const VP = require(path.join(__dirname, '../js/games/vpoker.js')).Engine;
 const CR = require(path.join(__dirname, '../js/games/crash.js')).Engine;
 const PK = require(path.join(__dirname, '../js/games/plinko.js')).Engine;
 const MN = require(path.join(__dirname, '../js/games/mines.js')).Engine;
@@ -58,21 +57,6 @@ function stat(name, stake, returned, n, extra) {
     st += r.stake; ret += r.returned; if (r.pBJ) bj++;
   }
   stat('blackjack-basic', st, ret, N, `playerBJ=${(bj/N*100).toFixed(2)}% avgStake=${(st/N).toFixed(2)}`);
-}
-
-// ----- Video poker autoHold -----
-{
-  const N = 200000, bet = 100;
-  let st = 0, ret = 0, hits = {};
-  for (let i = 0; i < N; i++) {
-    const d = VP.deal();
-    const hold = VP.autoHold(d.hand);
-    const hand = VP.drawFrom(d.hand, hold, d.rest);
-    const r = VP.rankHand(hand);
-    if (r) hits[r.id] = (hits[r.id] || 0) + 1;
-    st += bet; ret += VP.payout(hand, bet);
-  }
-  stat('vpoker-autohold', st, ret, N, 'known-optimal-rtp=99.5439  ' + JSON.stringify(hits));
 }
 
 // ----- Crash: cash at various multipliers -----

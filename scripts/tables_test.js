@@ -1,8 +1,8 @@
-// 로비 + 7개 테이블/카드/인스턴트 게임 스크린샷, 콘솔 에러, 375/390px (node scripts/tables_test.js)
+// 로비 + 테이블/카드/인스턴트 게임 스크린샷, 콘솔 에러, 375/390px (node scripts/tables_test.js)
 const { chromium } = require(process.env.PW || 'playwright');
 const URL = process.env.URL || 'http://127.0.0.1:18006/';
 const OUT = require('path').join(__dirname, '../docs-screens/');
-const GAMES = ['blackjack','roulette','baccarat','vpoker','crash','plinko','mines'];
+const GAMES = ['blackjack','roulette','baccarat','holdem','crash','plinko','mines'];
 (async () => {
   const b = await chromium.launch();
   const errs = []; let fail = 0;
